@@ -22,7 +22,7 @@ export async function triggerAutoSync(shopId: string): Promise<void> {
             where: {
                 shopId,
                 status: 'running',
-                startedAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } // Only count last hour as "active" to prevent deadlocks
+                startedAt: { gte: new Date(Date.now() - 15 * 60 * 1000) } // Reduced from 1hr to 15mins for faster recovery
             }
         });
 
@@ -63,6 +63,7 @@ export async function triggerAutoSync(shopId: string): Promise<void> {
             // We return the promise so the caller can choose to await it if they want (e.g. initial sync)
             return (async () => {
                 let logId = '';
+                console.log(`[Auto-Sync] Launching async sync process for ${shopId}`);
                 try {
                     const log = await createSyncLog(shopId, 'incremental');
                     logId = log.id;
