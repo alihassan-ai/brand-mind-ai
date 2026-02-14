@@ -13,7 +13,7 @@ export interface PublicBrandAnalysis {
 
 export async function analyzePublicDomain(domain: string): Promise<PublicBrandAnalysis> {
     const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
+        apiKey: process.env.OPENAI_API_KEY?.trim(),
     });
 
     console.log(`[PublicAnalyzer] Starting analysis for: ${domain}`);
