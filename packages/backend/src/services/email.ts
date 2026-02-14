@@ -4,9 +4,7 @@ import { Resend } from 'resend';
 function getResend() {
     return new Resend(process.env.RESEND_API_KEY);
 }
-const FROM_EMAIL = process.env.NODE_ENV === 'production'
-    ? 'BrandMindAI <noreply@brandmind.ai>'
-    : 'BrandMindAI <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'BrandMindAI <onboarding@resend.dev>';
 
 const APP_URL = process.env.SHOPIFY_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
