@@ -75,10 +75,12 @@ async function shopifyRequest(shop: string, accessToken: string, endpoint: strin
 
     if (!response.ok) {
         const text = await response.text();
+        console.error(`[Shopify API] Error on ${endpoint} (${response.status}): ${text}`);
         throw new Error(`Shopify API error (${response.status}): ${text}`);
     }
 
-    return response.json();
+    const json = await response.json();
+    return json;
 }
 
 async function getOrInitSyncState(shopId: string, resource: string) {
@@ -117,6 +119,7 @@ async function updateSyncState(shopId: string, resource: string, lastId: string)
             lastSyncedAt: new Date(),
         },
     });
+    console.log(`[SyncState] Updated ${resource} for shop ${shopId} - lastId: ${lastId}`);
 }
 
 export async function syncProducts(shopId: string, shopDomain: string, accessToken: string) {

@@ -1,3 +1,11 @@
 {
-    "$schema": "https://openapi.vercel.sh/vercel.json"
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "functions": {
+        "packages/frontend/src/app/(app)/command-center/page.tsx": {
+            "maxDuration": 60
+        },
+        "packages/frontend/src/app/api/auth/shopify/callback/route.ts": {
+            "maxDuration": 60
+        }
+    }
 }

@@ -83,7 +83,7 @@ export async function aggregateDailyMetrics(shopId: string, date: Date) {
 /**
  * Backfills daily and product metrics for the last N days.
  */
-export async function backfillDailyMetrics(shopId: string, days: number = 30) {
+export async function backfillDailyMetrics(shopId: string, days: number = 7) {
     console.log(`[Metrics] Starting backfill for shop ${shopId} over ${days} days...`);
     const now = new Date();
 
