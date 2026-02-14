@@ -49,13 +49,25 @@ export default async function DashboardPage() {
     redirect("/onboarding");
   }
 
-  // Trigger auto-sync in background (non-blocking)
-  triggerAutoSync(shop.id).catch(console.error);
+  // 2. Check for initial synchronization
+  const orderCount = await prisma.order.count({ where: { shopId: shop.id } });
+  const isInitialSync = orderCount === 0;
+
+  if (isInitialSync) {
+    // Triggers and WAITS for initial sync in production to avoid empty dashboard
+    console.log(`[CommandCenter] No data found. Triggering initial sync for ${shop.shopDomain}`);
+    await triggerAutoSync(shop.id);
+  } else {
+    // Background sync for subsequent visits
+    triggerAutoSync(shop.id).catch(console.error);
+  }
 
   // Calculate Executive KPIs and AI Brief
   const kpis = await calculateExecutiveKPIs(shop.id);
+  const dataExists = orderCount > 0 || (await prisma.order.count({ where: { shopId: shop.id } })) > 0;
+
   const [brief, insights, syncLogs] = await Promise.all([
-    generateExecutiveBrief(shop.id, kpis),
+    !dataExists ? Promise.resolve("We're currently connecting to your Shopify store. Once we've analyzed your orders and products, your first Executive Brief will appear here.") : generateExecutiveBrief(shop.id, kpis),
     getInsightsDashboard(),
     prisma.syncEvent.findMany({
       where: { shopId: shop.id },

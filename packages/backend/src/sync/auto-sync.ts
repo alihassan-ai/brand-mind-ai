@@ -10,9 +10,10 @@ const activeSyncs = new Set<string>();
 /**
  * Checks if data is stale and triggers a background incremental sync if needed.
  */
-export async function triggerAutoSync(shopId: string) {
+export async function triggerAutoSync(shopId: string): Promise<void> {
     if (activeSyncs.has(shopId)) {
-        return; // Already triggering in this process
+        console.log(`[Auto-Sync] Shop ${shopId} already has an active sync in this process.`);
+        return;
     }
 
     try {
@@ -57,10 +58,10 @@ export async function triggerAutoSync(shopId: string) {
 
         if (needsSync) {
             activeSyncs.add(shopId);
-            console.log(`[Auto-Sync] Data stale for shop ${shopId}. Triggering background update...`);
+            console.log(`[Auto-Sync] Data stale for shop ${shopId}. Triggering update...`);
 
-            // Fire and forget background sync
-            (async () => {
+            // We return the promise so the caller can choose to await it if they want (e.g. initial sync)
+            return (async () => {
                 let logId = '';
                 try {
                     const log = await createSyncLog(shopId, 'incremental');
