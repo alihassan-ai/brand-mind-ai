@@ -1,0 +1,318 @@
+@import "tailwindcss";
+
+/* ============================================
+   DESIGN SYSTEM — BrandMindAI
+   Midnight Intelligence Theme
+   Deep Navy × Electric Violet × Luminous Cyan
+   ============================================ */
+
+:root {
+  /* ── Backgrounds ── Deep midnight navy */
+  --background: #060918;
+  --background-raised: #09102A;
+  --background-card: #0C1528;
+  --background-surface: #111D38;
+
+  /* ── Foreground ── Softer off-white for extended reading */
+  --foreground: #E2E8F0;
+
+  /* ── Primary ── Electric Violet (AI / Intelligence feel) */
+  --primary: #7C3AED;
+  --primary-hover: #6D28D9;
+  --primary-foreground: #FFFFFF;
+  --primary-muted: rgba(124, 58, 237, 0.1);
+  --primary-border: rgba(124, 58, 237, 0.25);
+
+  /* ── Secondary ── */
+  --secondary: #1E293B;
+  --secondary-foreground: #F8FAFC;
+
+  /* ── Muted ── */
+  --muted: #1E293B;
+  --muted-foreground: #64748B;
+
+  /* ── Accent ── Luminous cyan for data metrics */
+  --accent: #22D3EE;
+  --accent-muted: rgba(34, 211, 238, 0.1);
+  --accent-foreground: #0F172A;
+
+  /* ── Borders & Inputs ── */
+  --border: rgba(148, 163, 184, 0.1);
+  --border-hover: rgba(148, 163, 184, 0.18);
+  --input: rgba(148, 163, 184, 0.08);
+  --input-focus: rgba(124, 58, 237, 0.3);
+  --ring: #7C3AED;
+
+  /* ── Semantic ── */
+  --destructive: #F43F5E;
+  --destructive-foreground: #fff1f2;
+  --success: #10B981;
+  --success-foreground: #ecfdf5;
+  --warning: #F59E0B;
+  --warning-foreground: #fffbeb;
+  --info: #38BDF8;
+  --info-foreground: #f0f9ff;
+
+  /* ── Popover / Card ── */
+  --popover: #0C1528;
+  --popover-foreground: #E2E8F0;
+  --card: #0C1528;
+  --card-foreground: #E2E8F0;
+
+  /* ── Module Accent Colors ── */
+  --module-command: #7C3AED;
+  --module-product: #38BDF8;
+  --module-growth: #10B981;
+  --module-customer: #A78BFA;
+  --module-business: #F472B6;
+
+  /* ── Radius ── */
+  --radius: 0.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+  --shadow-primary: 0 20px 40px -10px rgba(124, 58, 237, 0.4);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-glow-primary: 0 0 40px rgba(124, 58, 237, 0.2);
+  --shadow-glow-cyan: 0 0 30px rgba(34, 211, 238, 0.15);
+
+  /* ── Transitions ── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+body {
+  background-color: var(--background);
+  /* Violet aurora at top — signature "intelligence" ambience */
+  background-image:
+    radial-gradient(ellipse 120% 55% at 50% -8%, rgba(124, 58, 237, 0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 35% at 95% 5%, rgba(34, 211, 238, 0.04) 0%, transparent 50%);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+
+::selection {
+  background: rgba(124, 58, 237, 0.35);
+  color: white;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.5);
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  font-family: inherit;
+}
+
+/* ============================================
+   FOCUS RING
+   ============================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.animate-fade-in { animation: fade-in 0.5s ease-out; }
+.animate-slide-up { animation: slide-up 0.5s ease-out; }
+.animate-slide-down { animation: slide-down 0.4s ease-out; }
+.animate-scale-in { animation: scale-in 0.3s ease-out; }
+.animate-gradient-flow { animation: gradient-flow 4s ease infinite; }
+.animate-pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+/* Gradient text — violet to cyan */
+.text-gradient {
+  background: linear-gradient(135deg, #A78BFA 0%, #7C3AED 45%, #22D3EE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-violet {
+  background: linear-gradient(135deg, #C4B5FD 0%, #818CF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Glow effects */
+.text-glow-primary {
+  text-shadow: 0 0 40px rgba(124, 58, 237, 0.5);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 40px rgba(245, 158, 11, 0.35);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 30px rgba(34, 211, 238, 0.4);
+}
+
+/* ============================================
+   GLASS EFFECTS
+   ============================================ */
+
+.glass {
+  background: rgba(6, 9, 24, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.glass-card {
+  background: rgba(12, 21, 40, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ============================================
+   GRADIENT BORDERS
+   ============================================ */
+
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.5), rgba(34, 211, 238, 0.2), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* ============================================
+   CARD SURFACE HIGHLIGHT
+   ============================================ */
+
+/* Top edge highlight for depth */
+.card-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+  pointer-events: none;
+}
+
+/* ============================================
+   BACKGROUND UTILITIES
+   ============================================ */
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ============================================
+   STATUS INDICATORS
+   ============================================ */
+
+.status-dot-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  animation: pulse-glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,1 @@
+{"version":3,"file":"baselines.d.ts","sourceRoot":"","sources":["../../src/engine/baselines.ts"],"names":[],"mappings":"AAEA,MAAM,WAAW,QAAQ;IACrB,OAAO,EAAE,MAAM,CAAC;IAChB,MAAM,EAAE,MAAM,CAAC;CAClB;AAED,wBAAsB,2BAA2B,CAAC,MAAM,EAAE,MAAM,EAAE,YAAY,GAAE,MAAW;;;UAgB1F;AAED,wBAAsB,uBAAuB,CAAC,SAAS,EAAE,MAAM,EAAE,YAAY,GAAE,MAAW;;UAczF"}

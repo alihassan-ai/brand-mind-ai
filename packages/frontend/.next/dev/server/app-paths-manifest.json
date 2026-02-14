@@ -1,0 +1,18 @@
+{
+  "/(app)/command-center/page": "app/(app)/command-center/page.js",
+  "/(app)/customer-intelligence/page": "app/(app)/customer-intelligence/page.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
+  "/(app)/nexthits/page": "app/(app)/nexthits/page.js",
+  "/(app)/product-intelligence/next-hit/page": "app/(app)/product-intelligence/next-hit/page.js",
+  "/(app)/product-intelligence/page": "app/(app)/product-intelligence/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/auth/shopify/callback/route": "app/api/auth/shopify/callback/route.js",
+  "/api/auth/shopify/route": "app/api/auth/shopify/route.js",
+  "/api/dna/update/route": "app/api/dna/update/route.js",
+  "/auth/forgot-password/page": "app/auth/forgot-password/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/onboarding/page": "app/onboarding/page.js",
+  "/page": "app/page.js"
+}

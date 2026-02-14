@@ -1,0 +1,20 @@
+{
+  "node": {
+    "0058028587441435f25f14842a580364f44a80d02d": {
+      "workers": {
+        "app/(app)/product-intelligence/next-hit/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/product-intelligence/next-hit/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/nexthit.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "generateNextHit",
+          "filename": "packages/frontend/src/app/actions/nexthit.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/product-intelligence/next-hit/page": "rsc"
+      },
+      "exportedName": "generateNextHit",
+      "filename": "packages/frontend/src/app/actions/nexthit.ts"
+    }
+  },
+  "edge": {}
+}

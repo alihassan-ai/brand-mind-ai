@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///Users/mac/Desktop/NEW/packages/frontend/src/app/%28app%29/dashboard/page.tsx"],"sourcesContent":["import { redirect } from \"next/navigation\";\nexport default function DashboardRedirect() { redirect(\"/command-center\"); }\n"],"names":[],"mappings":";;;;AAAA;AAAA;;AACe,SAAS;IAAsB,IAAA,iMAAQ,EAAC;AAAoB"}}]
+}

@@ -1,0 +1,3 @@
+{
+  "/api/auth/shopify/callback/route": "app/api/auth/shopify/callback/route.js"
+}

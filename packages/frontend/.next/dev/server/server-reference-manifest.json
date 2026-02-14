@@ -1,0 +1,141 @@
+{
+  "node": {
+    "003511f44a37ebd242f1e43c61f001933c23c3bb17": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getInsightsDashboard",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getInsightsDashboard"
+    },
+    "00410d5e7d4d77051d007e1f1751d734b2af67b434": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getCustomerSegments",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getCustomerSegments"
+    },
+    "00638c5a6a08dbaf30597ce6a19dfea9b987d7aa90": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getMarketingOpportunities",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getMarketingOpportunities"
+    },
+    "0074cfaab28a516c833588c82fa49562a2285018a6": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getCatalogHealth",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getCatalogHealth"
+    },
+    "007b0b3bdcb2b49100f67b862d7ddd6d4d522d7539": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getPatterns",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getPatterns"
+    },
+    "00a4108298534662364f91d524deed02838093cc8a": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getRestockPredictions",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getRestockPredictions"
+    },
+    "00d95144b7abf4de556bd60d1e058895ac0fc19045": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getProductGrades",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getProductGrades"
+    },
+    "00f3b58f8fd85093c6a395bb24ecea057514c332ea": {
+      "workers": {
+        "app/(app)/command-center/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/command-center/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/insights.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getBundleSuggestions",
+          "filename": "packages/frontend/src/app/actions/insights.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/command-center/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/insights.ts",
+      "exportedName": "getBundleSuggestions"
+    },
+    "0058028587441435f25f14842a580364f44a80d02d": {
+      "workers": {
+        "app/(app)/product-intelligence/next-hit/page": {
+          "moduleId": "[project]/packages/frontend/.next-internal/server/app/(app)/product-intelligence/next-hit/page/actions.js { ACTIONS_MODULE0 => \"[project]/packages/frontend/src/app/actions/nexthit.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "generateNextHit",
+          "filename": "packages/frontend/src/app/actions/nexthit.ts"
+        }
+      },
+      "layer": {
+        "app/(app)/product-intelligence/next-hit/page": "rsc"
+      },
+      "filename": "packages/frontend/src/app/actions/nexthit.ts",
+      "exportedName": "generateNextHit"
+    }
+  },
+  "edge": {},
+  "encryptionKey": "fSTReHGKjhzMvqwsuhERgv4ORI3B/olHGCK9henV91A="
+}

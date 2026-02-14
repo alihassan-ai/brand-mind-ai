@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///Users/mac/Desktop/NEW/packages/frontend/src/app/%28app%29/nexthits/page.tsx"],"sourcesContent":["import { redirect } from \"next/navigation\";\nexport default function NextHitsRedirect() { redirect(\"/product-intelligence/next-hit\"); }\n"],"names":[],"mappings":";;;;AAAA;AAAA;;AACe,SAAS;IAAqB,IAAA,iMAAQ,EAAC;AAAmC"}}]
+}
