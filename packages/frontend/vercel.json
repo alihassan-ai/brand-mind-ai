@@ -1,13 +1,13 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "functions": {
-        "src/app/(app)/command-center/page.tsx": {
+        "api/auth/shopify/callback": {
             "maxDuration": 60
         },
-        "src/app/api/auth/shopify/callback/route.ts": {
+        "api/diag-sync": {
             "maxDuration": 60
         },
-        "src/app/api/diag/sync/route.ts": {
+        "command-center": {
             "maxDuration": 60
         }
     }
