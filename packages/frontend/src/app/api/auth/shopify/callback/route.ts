@@ -6,6 +6,9 @@ import { encrypt } from '@brandmind/backend/auth/crypto';
 import { cookies } from 'next/headers';
 import { runFullSync } from '@brandmind/backend/sync/shopify-sync';
 
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         console.log('[Shopify Callback] Incoming URL:', req.url);
