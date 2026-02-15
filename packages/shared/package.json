@@ -2,6 +2,9 @@
   "name": "@brandmind/shared",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "postinstall": "npx prisma generate --schema=./prisma/schema.prisma"
+  },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
