@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@brandmind/shared';
 import { getConnectedShop } from '@brandmind/backend/auth/session';
+import { triggerAutoSync } from '@brandmind/backend/sync/auto-sync';
 
 export async function GET(req: NextRequest) {
     try {
@@ -16,6 +17,8 @@ export async function GET(req: NextRequest) {
 
         const { searchParams } = new URL(req.url);
         const reset = searchParams.get('reset') === 'true';
+        const force = searchParams.get('force') === 'true';
+        const verbose = searchParams.get('verbose') === 'true';
 
         if (reset) {
             console.log(`[Diag] Resetting sync states for shop ${shop.id}`);
@@ -25,11 +28,17 @@ export async function GET(req: NextRequest) {
             });
         }
 
+        if (force) {
+            console.log(`[Diag] Forcing sync for shop ${shop.id}`);
+            // We await it here so the diagnostic route stays open until sync finishes (up to 60s maxDuration)
+            await triggerAutoSync(shop.id, true);
+        }
+
         const [orders, products, customers, lastEvents, syncStates] = await Promise.all([
             prisma.order.count({ where: { shopId: shop.id } }),
             prisma.product.count({ where: { shopId: shop.id } }),
             prisma.customer.count({ where: { shopId: shop.id } }),
-            prisma.syncEvent.findMany({
+            (prisma as any).syncEvent.findMany({
                 where: { shopId: shop.id },
                 orderBy: { startedAt: 'desc' },
                 take: 5
@@ -42,7 +51,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             shop: shop.shopDomain,
             counts: { orders, products, customers },
-            syncStates,
+            syncStates: verbose ? syncStates : syncStates.length,
             lastEvents
         });
 

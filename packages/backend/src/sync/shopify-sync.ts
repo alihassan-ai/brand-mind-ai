@@ -134,6 +134,7 @@ export async function syncProducts(shopId: string, shopDomain: string, accessTok
     let maxId = sinceId;
 
     while (true) {
+        console.log(`[Sync] Fetching products for ${shopDomain} (since_id: ${sinceId}, total: ${totalProducts})...`);
         const data = await shopifyRequest(shopDomain, accessToken, 'products.json', {
             limit: '250',
             since_id: sinceId.toString(),
@@ -217,12 +218,7 @@ export async function syncOrders(shopId: string, shopDomain: string, accessToken
             status: 'any',
         };
 
-        // If a start date is provided, we use it to filter
-        if (params.created_at_min) {
-            // Wait, shopify API for orders using since_id and created_at_min together can be tricky
-            // Better to use created_at_min for the initial high-priority sync
-        }
-
+        console.log(`[Sync] Fetching orders for ${shopDomain} (since_id: ${sinceId}, total: ${totalOrders})...`);
         const data = await shopifyRequest(shopDomain, accessToken, 'orders.json', params) as { orders: ShopifyOrder[] };
 
         const orders: ShopifyOrder[] = data.orders || [];
@@ -366,6 +362,7 @@ async function syncOrdersWithFilter(shopId: string, shopDomain: string, accessTo
         };
         if (startDate) params.created_at_min = startDate;
 
+        console.log(`[Sync] Fetching orders with filter for ${shopDomain} (since_id: ${sinceId}, total: ${totalOrders})...`);
         const data = await shopifyRequest(shopDomain, accessToken, 'orders.json', params) as { orders: ShopifyOrder[] };
         const orders: ShopifyOrder[] = data.orders || [];
         if (orders.length === 0) break;
@@ -481,6 +478,7 @@ export async function syncCustomers(shopId: string, shopDomain: string, accessTo
     let maxId = sinceId;
 
     while (true) {
+        console.log(`[Sync] Fetching customers for ${shopDomain} (since_id: ${sinceId}, total: ${totalCustomers})...`);
         const data = await shopifyRequest(shopDomain, accessToken, 'customers.json', {
             limit: '250',
             since_id: sinceId.toString(),
