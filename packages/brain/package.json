@@ -1,0 +1,30 @@
+{
+  "name": "@brandmind/brain",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./intelligence": "./src/intelligence/index.ts",
+    "./intelligence/*": "./src/intelligence/*.ts",
+    "./agents": "./src/agents/index.ts",
+    "./agents/*": "./src/agents/*.ts",
+    "./nexthit": "./src/nexthit/index.ts",
+    "./nexthit/*": "./src/nexthit/*.ts",
+    "./rag": "./src/rag/index.ts",
+    "./rag/*": "./src/rag/*.ts",
+    "./engine": "./src/engine/index.ts",
+    "./engine/*": "./src/engine/*.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.1",
+    "openai": "^6.15.0",
+    "google-trends-api": "^4.9.2",
+    "cheerio": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "typescript": "^5"
+  }
+}

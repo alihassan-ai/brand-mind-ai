@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "paths": {
+      "@brandmind/shared": ["./packages/shared/src"],
+      "@brandmind/shared/*": ["./packages/shared/src/*"],
+      "@brandmind/backend": ["./packages/backend/src"],
+      "@brandmind/backend/*": ["./packages/backend/src/*"],
+      "@brandmind/brain": ["./packages/brain/src"],
+      "@brandmind/brain/*": ["./packages/brain/src/*"],
+      "@brandmind/admin": ["./packages/admin/src"],
+      "@brandmind/admin/*": ["./packages/admin/src/*"]
+    }
+  },
+  "include": ["packages/**/*.ts", "packages/**/*.tsx"],
+  "exclude": ["node_modules", "**/dist", "**/.next"],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/brain" },
+    { "path": "./packages/backend" },
+    { "path": "./packages/admin" },
+    { "path": "./packages/frontend" }
+  ]
+}

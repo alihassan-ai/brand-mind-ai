@@ -1,0 +1,30 @@
+{
+  "name": "brandmind-ai",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@brandmind/frontend",
+    "build": "npm run build --workspace=@brandmind/frontend",
+    "start": "npm run start --workspace=@brandmind/frontend",
+    "lint": "npm run lint --workspace=@brandmind/frontend",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:studio": "prisma studio"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "prisma": "6.19.1",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.1"
+  }
+}
