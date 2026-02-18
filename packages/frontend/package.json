@@ -9,9 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@brandmind/shared": "workspace:*",
-    "@brandmind/backend": "workspace:*",
-    "@brandmind/brain": "workspace:*",
+    "@brandmind/shared": "*",
+    "@brandmind/backend": "*",
+    "@brandmind/brain": "*",
     "@prisma/client": "6.19.1",
     "@radix-ui/react-slot": "^1.2.4",
     "@shopify/shopify-api": "^12.2.0",
