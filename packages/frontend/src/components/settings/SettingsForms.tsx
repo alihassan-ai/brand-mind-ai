@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { User, Shield, Store, Save, Lock, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export function SettingsForms({ user, shop }: { user: any; shop: any }) {
+export function SettingsForms({ user, shop, metaConnected, metaAdAccountName }: { user: any; shop: any, metaConnected?: boolean, metaAdAccountName?: string | null }) {
     const [profileLoading, setProfileLoading] = useState(false);
     const [profileStatus, setProfileStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -196,28 +196,65 @@ export function SettingsForms({ user, shop }: { user: any; shop: any }) {
 
             {/* Right Column: Info */}
             <div className="space-y-8">
+                {/* Connected Interfaces */}
                 <section className="bg-[var(--background-card)] border border-[var(--border)] rounded-2xl p-8 space-y-6">
                     <div className="flex items-center gap-3">
                         <Store className="w-6 h-6 text-amber-400" />
-                        <h2 className="text-xl font-clash font-bold">Connected Shop</h2>
+                        <h2 className="text-xl font-clash font-bold">Connected Interfaces</h2>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)]">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Store Domain</span>
-                            <p className="font-medium text-amber-400">{shop?.shopDomain || "Not Connected"}</p>
+                    <div className="space-y-6">
+                        {/* Shopify (Always Connected) */}
+                        <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-[#95BF47]/20 flex items-center justify-center">
+                                    <Store className="w-5 h-5 text-[#95BF47]" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-sm">Shopify Store</h4>
+                                    <p className="text-xs text-[var(--muted-foreground)]">{shop?.shopDomain || "Connected"}</p>
+                                </div>
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#95BF47] bg-[#95BF47]/10 px-2 py-1 rounded-full border border-[#95BF47]/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#95BF47] animate-pulse" />
+                                CONNECTED
+                            </div>
                         </div>
-                        <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)]">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Status</span>
-                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                Live Sync Active
-                            </span>
+
+                        {/* Meta Ads */}
+                        <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)] flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-[#1877F2]/20 flex items-center justify-center">
+                                    <svg className="w-5 h-5 text-[#1877F2]" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-sm">Meta Ads</h4>
+                                    <p className="text-xs text-[var(--muted-foreground)]">
+                                        {metaConnected ? (metaAdAccountName || "Account Linked") : "Connect to Sync Ads"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {metaConnected ? (
+                                <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#1877F2] bg-[#1877F2]/10 px-2 py-1 rounded-full border border-[#1877F2]/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-[#1877F2]" />
+                                    CONNECTED
+                                </div>
+                            ) : (
+                                <a href="/api/auth/meta" className="text-[10px] font-bold text-white bg-[#1877F2] hover:bg-[#166fe5] px-3 py-1.5 rounded-lg transition-colors">
+                                    CONNECT
+                                </a>
+                            )}
                         </div>
-                        <div className="p-4 rounded-xl bg-[var(--background)] border border-[var(--border)]">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-foreground)] block mb-1">Onboarding</span>
-                            <p className="text-sm text-[var(--muted-foreground)]">Step {shop?.onboardingStep} Completed</p>
-                        </div>
+                    </div>
+
+                    <div className="pt-2">
+                        <p className="text-xs text-[var(--muted-foreground)]">
+                            Integrations allow BrandMindAI to sync your data for deeper intelligence.
+                            <br /><span className="text-emerald-400">Shopify is mandatory</span> and cannot be disconnected.
+                        </p>
                     </div>
                 </section>
 
@@ -231,6 +268,6 @@ export function SettingsForms({ user, shop }: { user: any; shop: any }) {
                     </button>
                 </section>
             </div>
-        </div>
+        </div >
     );
 }

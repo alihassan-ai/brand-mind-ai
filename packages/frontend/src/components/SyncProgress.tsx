@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 interface SyncStep {
@@ -7,7 +7,7 @@ interface SyncStep {
     status: "pending" | "loading" | "complete";
 }
 
-export function SyncProgress({ shopDomain }: { shopDomain: string }) {
+export function SyncProgress({ syncDone = false }: { shopDomain: string; syncDone?: boolean }) {
     const [steps, setSteps] = useState<SyncStep[]>([
         { id: "sync", label: "Syncing Products & Orders", status: "loading" },
         { id: "dna", label: "Generating Brand DNA", status: "pending" },
@@ -15,7 +15,7 @@ export function SyncProgress({ shopDomain }: { shopDomain: string }) {
         { id: "gaps", label: "Identifying Market Gaps", status: "pending" },
     ]);
 
-    // Simulate progress for UI (In a real app, we'd poll an API)
+    // Animate steps forward while sync is in progress
     useEffect(() => {
         const timer = setTimeout(() => {
             setSteps(s => s.map(step => step.id === "sync" ? { ...step, status: "complete" } : step.id === "dna" ? { ...step, status: "loading" } : step));
@@ -35,6 +35,13 @@ export function SyncProgress({ shopDomain }: { shopDomain: string }) {
             clearTimeout(timer3);
         };
     }, []);
+
+    // When sync API call returns, mark all steps complete
+    useEffect(() => {
+        if (syncDone) {
+            setSteps(s => s.map(step => ({ ...step, status: "complete" })));
+        }
+    }, [syncDone]);
 
     return (
         <div className="w-full max-w-sm mx-auto space-y-6">

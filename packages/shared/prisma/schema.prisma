@@ -1,0 +1,1111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken  String?
+  refreshTokenExpires DateTime?
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  role          String   @default("user") // "user" | "admin"
+  
+  // Email Verification
+  emailVerified     DateTime?
+  verificationToken String?   @unique
+
+  shops         Shop[]
+  usageLogs     UsageLog[]
+  resetTokens   PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UsageLog {
+  id            String   @id @default(cuid())
+  userId        String
+  endpoint      String   // e.g., "/api/chat", "/api/sync"
+  model         String?  // e.g., "gpt-4o-mini", "text-embedding-3-small"
+  promptTokens  Int      @default(0)
+  completionTokens Int   @default(0)
+  totalTokens   Int      @default(0)
+  cost          Decimal  @db.Decimal(10, 6) // Cost in USD
+  metadata      Json?    // Additional request info
+  createdAt     DateTime @default(now())
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Shop {
+  id            String   @id @default(cuid())
+  userId        String?
+  shopDomain    String   @unique
+  accessToken   String
+  scopes        String?
+  installedAt   DateTime @default(now())
+  uninstalledAt DateTime?
+  onboardingComplete Boolean @default(false)
+  onboardingStep Int      @default(0)
+  currencyCode   String   @default("USD")
+  
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders        Order[]
+  products      Product[]
+  customers     Customer[]
+  dailyMetrics  DailyMetric[]
+  businessMemory BusinessMemorySnapshot[]
+  goals         Goal[]
+  recommendations Recommendation[]
+  nextHitCandidates NextHitCandidate[]
+  patternMemory PatternMemory[]
+  
+  // Brand Brain Relations
+  brandIdentity     BrandIdentity?
+  decisionGovernance DecisionGovernance?
+  brandVoice        BrandVoice?
+  kpiModel          KPIModel?
+  marketContext     MarketContext?
+  customerPersonas  CustomerPersona[]
+  brandHistory      BrandHistory[]
+  syncStates        SyncState[]
+
+  // Intelligence Layer Relations
+  storeDNA          StoreDNA?
+  dataSufficiency   DataSufficiency?
+  catalogGaps       CatalogGap[]
+  launchKits        LaunchKit[]
+  retentionInsights RetentionInsight[]
+  customerRFM       CustomerRFM[]
+  dataImports       DataImport[]
+  syncEvents        SyncEvent[]
+  metaAccount       MetaAccount?
+}
+
+model SyncEvent {
+  id          String   @id @default(cuid())
+  shopId      String
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  status      String   // "running", "success", "failed"
+  resource    String   // "full", "incremental", "products", etc.
+  stats       Json?    // { products: 12, orders: 4, ... }
+  error       String?
+
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@index([startedAt])
+}
+
+model SyncState {
+  id          String   @id @default(cuid())
+  shopId      String
+  resource    String   // "products", "orders", "customers"
+  lastId      String   @default("0") // Shopify ID to start from
+  lastSyncedAt DateTime @default(now())
+
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, resource])
+  @@index([shopId])
+}
+
+
+model Order {
+  id              String   @id @default(cuid())
+  shopId          String
+  shopifyId       String   @unique
+  customerId      String?  // Link to Customer for proper segmentation
+  orderNumber     String
+  totalPrice      Decimal  @db.Decimal(10, 2)
+  subtotalPrice   Decimal  @db.Decimal(10, 2)
+  totalTax        Decimal  @db.Decimal(10, 2)
+  totalDiscounts  Decimal  @db.Decimal(10, 2)
+  currency        String
+  financialStatus String?  // paid, pending, refunded, etc.
+  fulfillmentStatus String? // fulfilled, partial, unfulfilled
+  createdAt       DateTime
+  updatedAt       DateTime
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  lineItems       OrderLineItem[]
+  refunds         Refund[]
+
+  @@index([shopId])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model OrderLineItem {
+  id              String   @id @default(cuid())
+  orderId         String
+  shopifyId       String   @unique
+  productId       String?
+  variantId       String?
+  title           String
+  quantity        Int
+  price           Decimal  @db.Decimal(10, 2)
+  totalDiscount   Decimal  @db.Decimal(10, 2)
+  
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  shopId          String
+  shopifyId       String   @unique
+  title           String
+  handle          String
+  vendor          String?
+  productType     String?
+  createdAt       DateTime
+  updatedAt       DateTime
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  variants        Variant[]
+  
+  @@index([shopId])
+}
+
+model Variant {
+  id              String   @id @default(cuid())
+  productId       String
+  shopifyId       String   @unique
+  title           String
+  sku             String?
+  price           Decimal  @db.Decimal(10, 2)
+  cost            Decimal? @db.Decimal(10, 2) // COGS for margin calculations
+  inventoryQuantity Int?
+  
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  metrics         ProductMetric[]
+  
+  @@index([productId])
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  shopId          String
+  shopifyId       String   @unique
+  email           String?
+  firstName       String?
+  lastName        String?
+  createdAt       DateTime
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  rfm             CustomerRFM[]
+
+  @@index([shopId])
+}
+
+model Refund {
+  id              String   @id @default(cuid())
+  orderId         String
+  shopifyId       String   @unique
+  amount          Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime
+  
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+}
+
+model DailyMetric {
+  id                    String   @id @default(cuid())
+  shopId                String
+  date                  DateTime
+  grossRevenue          Decimal  @db.Decimal(10, 2)
+  netRevenue            Decimal  @db.Decimal(10, 2)
+  orderCount            Int
+  aov                   Decimal  @db.Decimal(10, 2)
+  refundAmount          Decimal  @db.Decimal(10, 2)
+  newCustomersCount     Int
+  returningCustomersCount Int
+  
+  // v1.1 Executive Dashboard Metrics
+  marketingSpend        Decimal? @db.Decimal(10, 2)
+  sessions              Int?
+  fulfillmentTime       Float?    // Average days to fulfill
+  
+  shop                  Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@unique([shopId, date])
+  @@index([shopId])
+}
+
+model ProductMetric {
+  id              String   @id @default(cuid())
+  variantId       String
+  date            DateTime
+  revenue         Decimal  @db.Decimal(10, 2)
+  unitsSold       Int
+  refundRate      Float?
+  
+  variant         Variant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  
+  @@unique([variantId, date])
+  @@index([variantId])
+}
+
+model BusinessMemorySnapshot {
+  id              String   @id @default(cuid())
+  shopId          String
+  date            DateTime
+  snapshot        Json
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@index([shopId])
+}
+
+model Goal {
+  id              String   @id @default(cuid())
+  shopId          String
+  type            String
+  targetMetric    String?
+  targetValue     Float?
+  timeHorizonDays Int?
+  constraints     Json?
+  priority        Int      @default(3)
+  createdAt       DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@index([shopId])
+}
+
+model Recommendation {
+  id              String   @id @default(cuid())
+  shopId          String
+  type            String   // opportunity | danger
+  title           String
+  content         Json     // action, impact, evidence, reasoning
+  status          String   @default("active") // active, dismissed, applied
+  createdAt       DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@index([shopId])
+}
+
+// Next Hit Service Models
+
+model PatternMemory {
+  id              String   @id @default(cuid())
+  shopId          String
+  patternType     String   // color_preference, price_band, category_affinity, seasonal
+  patternData     Json     // detailed pattern information
+  confidence      Float
+  sampleSize      Int
+  lastUpdated     DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@unique([shopId, patternType])
+  @@index([shopId])
+}
+
+model NextHitCandidate {
+  id              String   @id @default(cuid())
+  shopId          String
+  title           String
+  description     String
+  patternSource   String   // What pattern created this
+  patternEvidence Json     // Facts from the store
+  confidence      Float
+  hitType         String   // safe, moderate, bold
+  status          String   @default("generated") // generated, shortlisted, analyzing, launched, rejected, delayed
+  scores          Json     // { demand, affinity, refundRisk, cannibalization, complexity, goalAlignment }
+  rank            Int?     // Position in top 10
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  analysis        NextHitAnalysis?
+  outcome         NextHitOutcome?
+  scoringAudits   ScoringAudit[]
+
+  @@index([shopId])
+  @@index([shopId, status])
+}
+
+model NextHitAnalysis {
+  id                  String   @id @default(cuid())
+  candidateId         String   @unique
+  demandRisk          Json     // { level, evidence, confidence }
+  refundRisk          Json
+  brandRisk           Json
+  operationalRisk     Json
+  cannibalizationRisk Json
+  revenueScenarios    Json     // { conservative, expected, aggressive } with assumptions
+  testPath            Json     // { type, successCriteria, stopConditions, dataLearned }
+  createdAt           DateTime @default(now())
+  
+  candidate           NextHitCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+model NextHitOutcome {
+  id              String   @id @default(cuid())
+  candidateId     String   @unique
+  decision        String   // launched, delayed, rejected
+  decisionReason  String?
+  launchDate      DateTime?
+  actualRevenue   Decimal? @db.Decimal(10, 2)
+  actualUnits     Int?
+  refundRate      Float?
+  performanceVsPrediction String? // exceeded, met, missed
+  lessonsLearned  Json?
+  createdAt       DateTime @default(now())
+  
+  candidate       NextHitCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// BRAND BRAIN MODELS
+// ============================================
+
+model BrandIdentity {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  brandName       String
+  markets         String[] // e.g., ["US", "UK"]
+  languages       String[] // e.g., ["en", "ar"]
+  channels        String[] // e.g., ["DTC", "Amazon", "Retail"]
+  mission         String   @db.Text
+  promise         String   @db.Text
+  positioning     Json     // { target, category, differentiator, proof }
+  coreValues      String[]
+  antiValues      String[] // "We are NOT..."
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model DecisionGovernance {
+  id                String   @id @default(cuid())
+  shopId            String   @unique
+  priorityAreas     String[] // e.g., ["Inventory", "Pricing", "New Products"]
+  riskTolerance     String   // low, medium, high
+  tradeOffRules     Json     // { "speed_vs_accuracy": "accuracy", ... }
+  escalationPaths   Json     // { "high_risk": "founder@...", ... }
+  alertOwners       Json     // { "stockout": "ops@...", ... }
+  createdAt         DateTime @default(now())
+  
+  shop              Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model CustomerPersona {
+  id                String   @id @default(cuid())
+  shopId            String
+  name              String   // e.g., "The Busy Professional"
+  isPrimary         Boolean  @default(false)
+  jobToBeDone       String   @db.Text
+  triggers          String[] // What makes them buy
+  objections        String[] // What stops them
+  decisionCriteria  String[] // How they evaluate
+  channels          String[] // Where they discover
+  trustSources      String[] // Who they trust
+  createdAt         DateTime @default(now())
+  
+  shop              Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  
+  @@index([shopId])
+}
+
+model BrandVoice {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  toneAttributes  String[] // e.g., ["Confident", "Warm", "Expert"]
+  alwaysLanguage  String[] // Words/phrases to always use
+  neverLanguage   String[] // Words/phrases to never use
+  bestExamples    String[] // Great copy examples
+  worstExamples   String[] // Bad copy examples
+  sensitiveTopics String[] // Topics requiring care
+  complianceRules Json     // { "claims": [...], "restrictions": [...] }
+  createdAt       DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model KPIModel {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  northStarMetric String   // e.g., "Monthly Recurring Revenue"
+  supportingKPIs  Json     // [{ name, target, threshold, unit }]
+  seasonality     Json?    // { "Q4": "high", "summer": "low" }
+  createdAt       DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model MarketContext {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  competitors     Json     // [{ name, positioning, threat_level }]
+  differentiators String[]
+  pricingPosition String   // premium, mid-market, value
+  categoryDynamics String? @db.Text
+  createdAt       DateTime @default(now())
+  
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model BrandHistory {
+  id              String   @id @default(cuid())
+  shopId          String
+  eventDate       DateTime
+  eventType       String   // launch, pivot, crisis, win, lesson
+  title           String
+  description     String   @db.Text
+  lessonsLearned  String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+}
+
+// ============================================
+// STORE DNA & INTELLIGENCE LAYER
+// ============================================
+
+model StoreDNA {
+  id                    String   @id @default(cuid())
+  shopId                String   @unique
+  computedAt            DateTime @default(now())
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 1: BRAND IDENTITY (From Public Demo + Brand Book + User Input)
+  // ═══════════════════════════════════════════════════════════════
+  brandName             String?
+  tagline               String?
+  mission               String?  @db.Text
+  vision                String?  @db.Text
+  coreValues            String[] // e.g., ["Quality", "Sustainability"]
+  antiValues            String[] // "We are NOT..."
+  brandPersonality      String[] // e.g., ["Bold", "Minimalist"]
+  targetAudience        Json?    // { primaryDemographic, psychographic, geographicFocus }
+  brandStory            String?  @db.Text
+  foundingYear          Int?
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 2: MARKET POSITION (From Public Demo + User Input)
+  // ═══════════════════════════════════════════════════════════════
+  industry              String?  // e.g., "Fashion & Apparel"
+  niche                 String?  // e.g., "Sustainable yoga wear"
+  pricePositioning      String?  // budget, mid-market, premium, luxury
+  competitiveDifferentiator String? @db.Text
+  directCompetitors     String[]
+  marketMaturity        String?  // emerging, growing, mature, declining
+  geographicReach       String?  // local, national, international, global
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 3: OPERATIONAL DNA (From Shopify Data)
+  // ═══════════════════════════════════════════════════════════════
+  // Price Architecture
+  priceSweetSpot        Json?    // { min, max, peak, distribution }
+  priceBands            Json?    // [{ band, min, max, revenue, orders, avgMargin, refundRate }]
+  avgOrderValue         Float?
+  avgItemPrice          Float?
+
+  // Catalog Structure
+  totalProducts         Int?
+  totalVariants         Int?
+  categoryBreakdown     Json?    // [{ name, productCount, revenueShare, growthRate }]
+  categoryDepth         String?  // shallow, moderate, deep
+  categoryBreadth       String?  // narrow, moderate, broad
+
+  // Product Intelligence
+  topPerformingTypes    Json?    // [{ type, revenue, velocity, growth }]
+  growingTypes          Json?    // types with positive acceleration
+  decliningTypes        Json?    // types with negative acceleration
+  productLifecycles     Json?    // [{ productId, stage, velocity, acceleration }]
+  lifecycleDistribution Json?    // { rising: %, peak: %, declining: %, dead: % }
+
+  // Vendor Intelligence
+  vendorPerformance     Json?    // [{ vendor, revenue, refundRate, velocity }]
+  vendorConcentration   Float?   // HHI score (0-1)
+  vendorCount           Int?
+
+  // Seasonality
+  seasonalityCurve      Json?    // [{ month, revenueIndex, peakCategories }]
+  seasonalityPattern    String?  // none, mild, moderate, strong
+  peakMonths            String[]
+  lowMonths             String[]
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 4: CUSTOMER DNA (From Shopify Data)
+  // ═══════════════════════════════════════════════════════════════
+  avgOrderFrequency     Float?   // days between orders
+  repeatPurchaseRate    Float?   // % who buy again
+  avgItemsPerOrder      Float?
+  basketAffinities      Json?    // [{ products, cooccurrence, lift }]
+  entryProducts         Json?    // products that acquire new customers
+  upgradePaths          Json?    // [{ from, to, conversionRate }]
+  customerSegments      Json?    // [{ segment, size, aov, frequency, ltv }]
+  segmentDistribution   Json?    // { champions: %, loyal: %, atRisk: %, etc }
+  avgLTV                Float?
+  medianLTV             Float?
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 5: EXPANSION SIGNALS (Calculated)
+  // ═══════════════════════════════════════════════════════════════
+  // Revenue Concentration
+  heroProductShare      Float?   // % from top 1 product
+  top5ProductShare      Float?   // % from top 5 products
+  concentrationRisk     String?  // low, medium, high
+
+  // Growth Momentum
+  revenueGrowth30d      Float?   // % change
+  revenueGrowth90d      Float?
+  orderVelocityTrend    String?  // accelerating, stable, declining
+  newCustomerTrend      String?  // accelerating, stable, declining
+
+  // Margin Health (estimated)
+  estimatedGrossMargin  Float?
+  gmroi                 Float?   // Gross Margin ROI
+  marginHealthStatus    String?  // healthy, moderate, stressed
+
+  // Cash Position (inferred from BCG logic)
+  inferredCashPosition  String?  // cash_rich, balanced, tight
+  cashCowProductCount   Int?
+  starProductCount      Int?
+  questionMarkProductCount Int?
+
+  // Timing Signal
+  seasonalPosition      String?  // pre_peak, peak, post_peak, off_season
+  monthsUntilPeak       Int?
+  launchWindowQuality   String?  // excellent, good, fair, poor
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 6: STRATEGY RECOMMENDATION
+  // ═══════════════════════════════════════════════════════════════
+  recommendedStrategy   String?  // VARIANT_EXTENSION, HORIZONTAL_EXTENSION, etc.
+  strategyReasons       String[]
+  strategyConfidence    Float?
+  alternativeStrategies Json?    // [{ strategy, reasoning }]
+  recommendedLaunchTiming String?
+  launchTimingReason    String?
+
+  // ═══════════════════════════════════════════════════════════════
+  // SECTION 7: DATA QUALITY & COMPLETENESS
+  // ═══════════════════════════════════════════════════════════════
+  completenessScore     Float?   // 0-100
+  dataQualityScore      Float?   // 0-100
+  isActionable          Boolean  @default(false) // Can we make predictions?
+  missingFields         Json?    // [{ field, importance, question }]
+  dataBlockers          Json?    // [{ feature, requirement, current, needed }]
+
+  // Data Sources Status
+  hasPublicDemoData     Boolean  @default(false)
+  hasBrandBookData      Boolean  @default(false)
+  hasShopifyData        Boolean  @default(false)
+  lastShopifySync       DateTime?
+
+  // Health Scores (legacy + new)
+  catalogHealthScore    Float?   // 0-100
+  customerHealthScore   Float?   // 0-100
+  overallHealthScore    Float?   // 0-100
+
+  updatedAt             DateTime @updatedAt
+
+  shop                  Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+// Data Sufficiency Tracking
+model DataSufficiency {
+  id                    String   @id @default(cuid())
+  shopId                String   @unique
+
+  // Current Stats
+  orderCount            Int      @default(0)
+  productCount          Int      @default(0)
+  customerCount         Int      @default(0)
+  storeAgeDays          Int      @default(0)
+  dataSpanDays          Int      @default(0)
+  multiItemOrderCount   Int      @default(0)
+  categoryCount         Int      @default(0)
+  repeatCustomerCount   Int      @default(0)
+
+  // Sufficiency Scores
+  overallScore          Float    @default(0) // 0-100
+  isSufficient          Boolean  @default(false)
+
+  // Feature-specific readiness
+  nextHitReady          Boolean  @default(false)
+  seasonalityReady      Boolean  @default(false)
+  customerSegmentReady  Boolean  @default(false)
+  basketAffinityReady   Boolean  @default(false)
+  categoryExpansionReady Boolean @default(false)
+
+  // Blockers & Estimates
+  blockers              Json?    // [{ feature, requirement, current, needed, message }]
+  warnings              Json?    // [{ feature, message, impact }]
+  estimates             Json?    // [{ feature, progress, daysUntilReady }]
+
+  // Timestamps
+  checkedAt             DateTime @default(now())
+
+  shop                  Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+}
+
+model CatalogGap {
+  id              String   @id @default(cuid())
+  shopId          String
+  gapType         String   // price_gap, category_gap, variant_gap, seasonal_gap
+  gapScore        Float    // 0-1 opportunity score
+  gapData         Json     // specific gap details
+  description     String   @db.Text
+  suggestedAction String   @db.Text
+  potentialRevenue Float?  // estimated revenue if filled
+  confidence      Float    // 0-1
+  status          String   @default("active") // active, addressed, dismissed
+  detectedAt      DateTime @default(now())
+  addressedAt     DateTime?
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@index([shopId, gapType])
+}
+
+model ScoringAudit {
+  id              String   @id @default(cuid())
+  candidateId     String
+  inputHash       String   // SHA256 of input data for reproducibility
+
+  // Score Breakdown
+  storeFitScore   Float    // Does it match Store DNA?
+  gapFillScore    Float    // Does it fill a detected gap?
+  trendMomentum   Float    // External trend data
+  marginPotential Float    // Profitability estimate
+  competitionScore Float   // Market saturation
+  seasonalityMatch Float   // Timing alignment
+
+  // Weights used
+  weights         Json     // { w1: 0.25, w2: 0.20, ... }
+  finalScore      Float
+
+  // Audit Trail
+  version         String   // scoring formula version
+  inputSnapshot   Json     // frozen copy of inputs used
+  computedAt      DateTime @default(now())
+
+  candidate       NextHitCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+}
+
+model TrendData {
+  id              String   @id @default(cuid())
+  keyword         String
+  category        String?
+  region          String   @default("US")
+
+  // Trend Metrics
+  trendScore      Float    // 0-100 interest level
+  velocity        Float    // week-over-week change percentage
+  acceleration    Float    // change in velocity
+  seasonalIndex   Float?   // seasonal adjustment factor
+
+  // Time Series
+  historicalData  Json?    // [{ date, value }]
+
+  // Metadata
+  source          String   // google_trends, social, etc.
+  fetchedAt       DateTime @default(now())
+  expiresAt       DateTime // when to refresh
+
+  @@unique([keyword, region, source])
+  @@index([category])
+  @@index([fetchedAt])
+}
+
+// ============================================
+// AGENT SYSTEM
+// ============================================
+
+model AgentExecution {
+  id              String   @id @default(cuid())
+  shopId          String
+  agentType       String   // dashboard, prediction, evidence, launch_kit, retention
+  triggerType     String   // scheduled, manual, event
+
+  // Execution Details
+  status          String   @default("running") // running, completed, failed
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+
+  // Input/Output
+  inputContext    Json     // what data was used
+  outputResult    Json?    // what was produced
+
+  // Performance
+  tokensUsed      Int?
+  latencyMs       Int?
+  errorMessage    String?
+
+  @@index([shopId])
+  @@index([agentType])
+  @@index([startedAt])
+}
+
+model LaunchKit {
+  id              String   @id @default(cuid())
+  shopId          String
+  candidateId     String?  // optional link to NextHitCandidate
+
+  // Product Details
+  productName     String
+  productType     String
+  targetPrice     Decimal  @db.Decimal(10, 2)
+
+  // Generated Assets
+  launchStrategy  Json     // { timing, channels, budget }
+  copyAssets      Json     // { headline, description, emailSubject, socialPosts }
+  pricingStrategy Json     // { msrp, introPrice, bundleOptions }
+  targetAudience  Json     // { primaryPersona, secondaryPersona, messaging }
+  successMetrics  Json     // { day7Target, day30Target, breakeven }
+  riskMitigation  Json     // { topRisks, mitigationSteps }
+
+  // Checklist
+  prelaunchChecklist Json  // [{ task, status, owner, dueDate }]
+
+  // Status
+  status          String   @default("draft") // draft, ready, launched, completed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+}
+
+model RetentionInsight {
+  id              String   @id @default(cuid())
+  shopId          String
+
+  // Segment Analysis
+  segmentType     String   // at_risk, churned, loyal, vip, dormant
+  customerCount   Int
+  revenueAtRisk   Decimal  @db.Decimal(10, 2)
+
+  // Predictions
+  churnProbability Float?  // for at_risk segment
+  reactivationProbability Float? // for churned segment
+
+  // Recommendations
+  recommendedAction String  @db.Text
+  actionType      String   // win_back, loyalty_reward, upsell, cross_sell
+  campaignSuggestion Json   // { channel, timing, offer, messaging }
+
+  // Performance
+  expectedLift    Float?   // expected revenue lift if action taken
+  confidence      Float
+
+  // Status
+  status          String   @default("active") // active, actioned, dismissed
+  createdAt       DateTime @default(now())
+  actionedAt      DateTime?
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@index([segmentType])
+}
+
+model CustomerRFM {
+  id              String   @id @default(cuid())
+  shopId          String
+  customerId      String
+
+  // RFM Scores (1-5)
+  recencyScore    Int
+  frequencyScore  Int
+  monetaryScore   Int
+  rfmSegment      String   // champions, loyal, at_risk, hibernating, lost, etc.
+
+  // Raw Values
+  daysSinceLastOrder Int
+  totalOrders     Int
+  totalSpent      Decimal  @db.Decimal(10, 2)
+  avgOrderValue   Decimal  @db.Decimal(10, 2)
+
+  // Predictions
+  predictedNextOrderDays Int?
+  predictedLTV    Decimal? @db.Decimal(10, 2)
+  churnRisk       Float?   // 0-1
+
+  computedAt      DateTime @default(now())
+
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@unique([shopId, customerId])
+  @@index([shopId])
+  @@index([rfmSegment])
+}
+
+// ============================================
+// EVIDENCE & GROUNDING SYSTEM
+// ============================================
+
+model EvidenceChain {
+  id              String   @id @default(cuid())
+  shopId          String
+  outputType      String   // recommendation, insight, prediction, answer
+  outputId        String   // ID of the recommendation/insight/etc
+
+  // Evidence Items
+  evidenceItems   Json     // [{ type, source, value, timestamp, confidence }]
+
+  // Reasoning Chain
+  reasoningSteps  Json     // [{ step, claim, evidence, inference }]
+
+  // Confidence
+  overallConfidence Float
+  dataQualityScore Float   // based on data freshness and completeness
+
+  // Audit
+  createdAt       DateTime @default(now())
+
+  @@index([shopId])
+  @@index([outputType, outputId])
+}
+
+model DataQualityLog {
+  id              String   @id @default(cuid())
+  shopId          String
+
+  // Data Freshness
+  lastOrderSync   DateTime?
+  lastProductSync DateTime?
+  orderDataAge    Int?     // days since last order in data
+
+  // Completeness
+  ordersWithCustomer Float  // percentage
+  productsWithType Float   // percentage
+  productsWithVendor Float // percentage
+
+  // Quality Score
+  overallScore    Float    // 0-100
+  issues          Json     // [{ type, severity, description }]
+
+  computedAt      DateTime @default(now())
+
+  @@index([shopId])
+}
+
+// ============================================
+// DATA IMPORT SYSTEM
+// ============================================
+
+model DataImport {
+  id              String   @id @default(cuid())
+  shopId          String
+
+  // Import Details
+  importType      String   // csv, json, shopify_bulk
+  fileName        String?
+  fileSize        Int?
+
+  // Mapping
+  dataType        String   // orders, products, customers
+  fieldMapping    Json     // { sourceField: targetField }
+
+  // Status
+  status          String   @default("pending") // pending, processing, completed, failed
+  totalRows       Int?
+  processedRows   Int?
+  failedRows      Int?
+  errorLog        Json?    // [{ row, error }]
+
+  // Timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  shop            Shop     @relation(fields: [shopId], references: [id])
+
+  @@index([shopId])
+}
+
+// ============================================
+// SCHEDULED JOBS
+// ============================================
+
+model ScheduledJob {
+  id              String   @id @default(cuid())
+  shopId          String?  // null for system-wide jobs
+
+  // Job Definition
+  jobType         String   // sync, store_dna, gap_detection, pattern_analysis, trend_fetch
+  cronExpression  String   // e.g., "0 0 * * *" for daily
+
+  // Status
+  enabled         Boolean  @default(true)
+  lastRunAt       DateTime?
+  lastRunStatus   String?  // success, failed
+  lastRunDuration Int?     // milliseconds
+  lastError       String?
+
+  // Next Run
+  nextRunAt       DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([jobType])
+  @@index([nextRunAt])
+}
+
+// ============================================
+// GROWTH ENGINE (META ADS)
+// ============================================
+
+model MetaAccount {
+  id            String    @id @default(cuid())
+  shopId        String    @unique
+  shop          Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  adAccountId   String    // The ID of the connected ad account (act_123456)
+  accessToken   String    // Encrypted long-lived access token
+  status        String    @default("active") // active, revoked, error
+  lastSyncedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campaigns     MetaCampaign[]
+  insights      MetaInsight[]
+}
+
+model MetaCampaign {
+  id            String    @id @default(cuid())
+  metaAccountId String
+  metaAccount   MetaAccount @relation(fields: [metaAccountId], references: [id], onDelete: Cascade)
+  campaignId    String    @unique // The Meta ID (e.g. 238...)
+  name          String
+  status        String    // ACTIVE, PAUSED, ARCHIVED
+  objective     String?   // OUTCOME_SALES, OUTCOME_TRAFFIC etc
+  buyingType    String?   // AUCTION
+  spendCap      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  adSets        MetaAdSet[]
+  insights      MetaInsight[]
+}
+
+model MetaAdSet {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      MetaCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adSetId       String    @unique
+  name          String
+  status        String
+  dailyBudget   String?
+  lifetimeBudget String?
+  startTime     DateTime?
+  endTime       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  ads           MetaAd[]
+  insights      MetaInsight[]
+}
+
+model MetaAd {
+  id            String    @id @default(cuid())
+  adSetId       String
+  adSet         MetaAdSet @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+  adId          String    @unique
+  name          String
+  status        String
+  creativeId    String?   // Link to creative library later
+  previewUrl    String?   // Add preview URL for visual debugging
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  insights      MetaInsight[]
+}
+
+model MetaInsight {
+  id            String    @id @default(cuid())
+  // Polymorphic-ish relations (can belong to Account, Campaign, AdSet, or Ad)
+  metaAccountId String?
+  metaAccount   MetaAccount? @relation(fields: [metaAccountId], references: [id], onDelete: Cascade)
+  
+  campaignId    String?
+  campaign      MetaCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  adSetId       String?
+  adSet         MetaAdSet?    @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+
+  adId          String?
+  ad            MetaAd?       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  date          DateTime  @db.Date // Reporting date
+  spend         Float     @default(0)
+  impressions   Int       @default(0)
+  clicks        Int       @default(0)
+  cpc           Float     @default(0)
+  cpm           Float     @default(0)
+  ctr           Float     @default(0)
+  reach         Int       @default(0)
+  frequency     Float     @default(0)
+  
+  purchases     Int       @default(0) // action_values -> purchase
+  purchaseValue Float     @default(0)
+  roas          Float     @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([date])
+  @@index([metaAccountId])
+  @@index([campaignId])
+}

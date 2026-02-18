@@ -1,0 +1,695 @@
+================================================================================
+FUNCTIONAL REQUIREMENTS SPECIFICATION
+System: BrandMindAI — AI-Powered E-Commerce Intelligence Platform
+Document Type: Functional Requirements Specification (FRS)
+Version: 1.0
+Classification: Submitted to Software Engineering Council
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1.  Introduction
+2.  System Scope
+3.  Definitions and Acronyms
+4.  Stakeholders
+5.  User Authentication and Authorization
+6.  Shopify Store Integration and OAuth
+7.  Data Synchronization Engine
+8.  Store DNA Intelligence Module
+9.  NextHit Product Recommendation Engine
+10. Launch Kit Agent
+11. Retention Intelligence Agent
+12. Catalog Gap Detection Module
+13. Executive Dashboard and KPI Engine
+14. Public Domain Analysis Module
+15. Account and Settings Management
+16. Administration Module
+17. Notification and Email Services
+18. Data Integrity and Audit Logging
+19. Non-Functional Constraints Affecting Functional Behavior
+20. External Interface Requirements
+
+================================================================================
+1. INTRODUCTION
+================================================================================
+
+1.1 Purpose
+-----------
+This document specifies the complete set of functional requirements for
+BrandMindAI, an AI-augmented e-commerce intelligence platform designed
+for Shopify merchants. The requirements described herein define the
+observable behaviors, data processing rules, user interactions, and system
+responses that the software shall exhibit under normal and exceptional
+operating conditions.
+
+1.2 Intended Audience
+---------------------
+This document is intended for review by the Software Engineering Council,
+system architects, quality assurance engineers, and project stakeholders
+involved in the design, development, verification, and validation of the
+BrandMindAI system.
+
+1.3 Document Conventions
+------------------------
+- "SHALL" denotes a mandatory requirement.
+- "SHOULD" denotes a recommended requirement.
+- "MAY" denotes an optional requirement.
+- Each requirement is identified by a unique identifier of the form FR-XX-NNN
+  where XX denotes the module code and NNN is the sequential number.
+
+================================================================================
+2. SYSTEM SCOPE
+================================================================================
+
+BrandMindAI is a multi-tenant Software-as-a-Service (SaaS) platform that
+ingests e-commerce data from merchant Shopify stores via authenticated API
+integration, persists normalized transactional and behavioral data in a
+relational database, and applies deterministic scoring models and large
+language model (LLM) inference to produce actionable business intelligence
+outputs including product recommendations, catalog gap detection, customer
+retention strategies, and product launch plans.
+
+The system operates as a full-stack web application deployed on a serverless
+infrastructure, composed of a React-based frontend, a RESTful API layer, an
+AI/ML brain package, and a managed relational database.
+
+================================================================================
+3. DEFINITIONS AND ACRONYMS
+================================================================================
+
+AOV       — Average Order Value
+AES-256   — Advanced Encryption Standard with 256-bit key
+CRUD      — Create, Read, Update, Delete
+DNA       — Store DNA (proprietary multi-dimensional store analysis model)
+DTC       — Direct-to-Consumer
+FR        — Functional Requirement
+HHI       — Herfindahl-Hirschman Index (vendor concentration metric)
+KPI       — Key Performance Indicator
+LLM       — Large Language Model
+LTV       — Lifetime Value (of a customer)
+OAuth     — Open Authorization (authorization framework)
+RBAC      — Role-Based Access Control
+RFM       — Recency, Frequency, Monetary (customer segmentation model)
+SaaS      — Software as a Service
+SKU       — Stock Keeping Unit
+SSO       — Single Sign-On
+
+================================================================================
+4. STAKEHOLDERS
+================================================================================
+
+4.1 End Users (Merchants): Shopify store owners and operators who interact
+    with the platform to derive business intelligence.
+
+4.2 Administrators: Platform operators who manage user accounts, monitor
+    system health, and configure operational settings.
+
+4.3 External Systems: Shopify REST/GraphQL API, OpenAI API, Resend email
+    service, Google Trends API, and Neon managed PostgreSQL.
+
+================================================================================
+5. USER AUTHENTICATION AND AUTHORIZATION
+================================================================================
+
+FR-AU-001  The system SHALL provide a user registration interface accepting
+           full name, email address, and password as mandatory inputs.
+
+FR-AU-002  The system SHALL enforce password hashing using bcryptjs with a
+           minimum of 12 salt rounds prior to persistence.
+
+FR-AU-003  The system SHALL generate a cryptographically random 32-character
+           email verification token upon successful user registration.
+
+FR-AU-004  The system SHALL transmit the email verification token to the
+           registered email address via the transactional email service before
+           granting full account access.
+
+FR-AU-005  The system SHALL activate the user account upon receipt of a valid
+           email verification request containing a matching, unexpired token.
+
+FR-AU-006  The system SHALL authenticate users via email and password
+           credentials. On successful authentication, the system SHALL create
+           a session and issue a secure, HTTP-only session cookie.
+
+FR-AU-007  The system SHALL invalidate the active session and clear the
+           session cookie upon user-initiated logout.
+
+FR-AU-008  The system SHALL provide a password reset flow initiating with
+           submission of the registered email address. The system SHALL
+           generate and transmit a time-limited reset token to that address.
+
+FR-AU-009  The system SHALL allow password replacement upon submission of a
+           valid, unexpired reset token and a new password.
+
+FR-AU-010  The system SHALL enforce role-based access control (RBAC) with
+           at minimum two roles: "user" and "admin". Access to administrative
+           interfaces SHALL be restricted to principals holding the "admin"
+           role.
+
+FR-AU-011  The system SHALL reject all requests to authenticated endpoints
+           from unauthenticated sessions with an appropriate HTTP 401
+           response.
+
+FR-AU-012  The system SHALL reject requests to role-restricted endpoints from
+           authenticated sessions lacking the required role with an appropriate
+           HTTP 403 response.
+
+FR-AU-013  Session cookies SHALL be issued with the Secure and HttpOnly flags
+           enabled in production environments.
+
+================================================================================
+6. SHOPIFY STORE INTEGRATION AND OAUTH
+================================================================================
+
+FR-SH-001  The system SHALL implement Shopify OAuth 2.0 to allow authenticated
+           users to authorize the platform to access their Shopify store data.
+
+FR-SH-002  The OAuth authorization request SHALL request, at minimum, the
+           following Shopify permission scopes: read_products, read_orders,
+           read_customers, read_inventory.
+
+FR-SH-003  Upon successful OAuth callback, the system SHALL securely store
+           the Shopify access token, encrypting it at rest using AES-256
+           encryption with an environment-configured encryption key.
+
+FR-SH-004  The system SHALL associate exactly one connected Shop record per
+           authenticated user session, identified by the Shopify store domain.
+
+FR-SH-005  Upon successful OAuth authorization, the system SHALL automatically
+           initiate an initial full data synchronization of the connected store.
+
+FR-SH-006  The system SHALL expose the connected shop domain in a separate
+           session-scoped cookie to identify the active merchant store context.
+
+FR-SH-007  The system SHALL support disconnection and re-authorization of a
+           Shopify store without data loss of previously synced historical
+           records.
+
+================================================================================
+7. DATA SYNCHRONIZATION ENGINE
+================================================================================
+
+FR-DS-001  The system SHALL synchronize the following Shopify data entities
+           for each connected store: Products, Product Variants, Orders,
+           Order Line Items, Customers, Refunds, and Daily Metrics.
+
+FR-DS-002  The initial synchronization SHALL retrieve and persist a minimum
+           of six (6) months of historical order and customer data.
+
+FR-DS-003  The synchronization engine SHALL support incremental synchronization
+           using cursor-based pagination to process only records modified or
+           created since the last successful sync operation.
+
+FR-DS-004  The system SHALL persist synchronization cursor positions per data
+           entity to enable resumption of interrupted sync operations without
+           data duplication.
+
+FR-DS-005  The system SHALL normalize and persist all synchronized Shopify
+           data into the platform's relational schema, decoupling downstream
+           analytics from direct Shopify API dependencies.
+
+FR-DS-006  The system SHALL record a SyncEvent audit entry for every sync
+           operation, capturing: start timestamp, end timestamp, entity type,
+           record counts, and terminal status (success or failure).
+
+FR-DS-007  The system SHALL expose a manual sync trigger endpoint accessible
+           by authenticated users to initiate an on-demand synchronization.
+
+FR-DS-008  The system SHALL support background auto-synchronization that
+           operates independently of user interaction, ensuring data recency
+           without requiring explicit merchant intervention.
+
+FR-DS-009  Sync operations SHALL be idempotent; re-running a sync for an
+           already-synchronized period SHALL not produce duplicate records.
+
+FR-DS-010  The system SHALL expose a diagnostic endpoint providing the
+           real-time status, progress, and error detail of active or most
+           recent sync operations.
+
+FR-DS-011  Product records SHALL include: title, product type, vendor, tags,
+           and status. Variant records SHALL include: SKU, price, compare-at
+           price, inventory quantity, and weight.
+
+FR-DS-012  Order records SHALL include: order number, total price, subtotal,
+           taxes, discounts, fulfillment status, financial status, and line
+           item associations.
+
+FR-DS-013  Customer records SHALL include: email, first name, last name, and
+           order history associations.
+
+FR-DS-014  Refund records SHALL capture refund amounts and associations to
+           parent orders.
+
+================================================================================
+8. STORE DNA INTELLIGENCE MODULE
+================================================================================
+
+FR-DN-001  The system SHALL compute a multi-dimensional Store DNA analysis
+           for each connected merchant store upon request.
+
+FR-DN-002  The Store DNA analysis SHALL encompass the following analytical
+           dimensions:
+           a) Brand Identity — derived mission, positioning, target audience,
+              and core values inferred from product and order data.
+           b) Operational DNA — price architecture, catalog structure, and
+              vendor mix including HHI vendor concentration score.
+           c) Customer DNA — RFM segmentation distribution, average LTV,
+              repeat purchase rate, and basket affinity patterns.
+           d) Product Intelligence — velocity scoring, lifecycle stage
+              classification, growth rate, and performance tier per product.
+           e) Seasonality Analysis — monthly revenue indices, peak and
+              off-peak month identification.
+           f) Expansion Signals — revenue concentration metrics, growth
+              momentum, and margin health indicators.
+           g) Strategy Recommendation — categorized growth strategy derived
+              from store characteristics.
+           h) Data Quality Score — composite score assessing completeness and
+              actionability of available store data.
+
+FR-DN-003  The system SHALL classify each product into one of the following
+           lifecycle stages: rising, peak, declining, or dead, based on
+           computed velocity and recency metrics.
+
+FR-DN-004  The system SHALL classify product price points into a minimum of
+           seven (7) price bands (e.g., budget, value, mid-range, premium,
+           luxury, ultra-luxury) and determine the distribution of catalog
+           items across these bands.
+
+FR-DN-005  The system SHALL compute an RFM (Recency, Frequency, Monetary)
+           score per customer and assign each customer to one of ten (10)
+           defined RFM segments.
+
+FR-DN-006  The system SHALL assess data sufficiency prior to computing Store
+           DNA and surface a DataSufficiency record containing: readiness
+           status, blocking conditions (if any), and warnings.
+
+FR-DN-007  The system SHALL persist the computed Store DNA as a single
+           structured record per shop, replacing the prior version upon
+           re-computation.
+
+FR-DN-008  The system SHALL expose an endpoint to retrieve the current Store
+           DNA for the authenticated merchant's connected shop.
+
+FR-DN-009  The system SHALL detect and quantify price gaps — price band ranges
+           with adjacent demand signals but low or zero catalog coverage.
+
+================================================================================
+9. NEXTHIT PRODUCT RECOMMENDATION ENGINE
+================================================================================
+
+FR-NH-001  The system SHALL generate a ranked list of product opportunity
+           candidates (NextHit candidates) for a merchant upon request,
+           representing predicted next best-selling products.
+
+FR-NH-002  Before generating NextHit candidates, the system SHALL verify data
+           sufficiency. Generation SHALL be blocked if minimum thresholds for
+           orders, products, and customers are not met.
+
+FR-NH-003  The system SHALL execute a background pattern analysis prior to
+           candidate generation to learn the following merchant-specific
+           patterns from historical data:
+           a) Customer color preferences by frequency and revenue.
+           b) Customer price band affinities by segment.
+           c) Category purchase patterns and co-occurrence rates.
+
+FR-NH-004  The system SHALL generate candidate products using a minimum of
+           seven (7) distinct strategy types:
+           a) Color and product type combination candidates.
+           b) Price-optimized variant candidates.
+           c) Cross-purchase bundle candidates.
+           d) Growth category expansion candidates.
+           e) Price gap filler candidates.
+           f) Seasonal gap candidates.
+           g) AI-researched external market opportunity candidates.
+
+FR-NH-005  Each candidate SHALL be scored by a unified scoring formula
+           incorporating the following weighted dimensions:
+           a) Store DNA Fit — 25%
+           b) Catalog Gap Fill Opportunity — 20%
+           c) Market Trend Momentum — 15%
+           d) Estimated Margin Potential — 15%
+           e) Competitive Landscape Pressure — 10%
+           f) Seasonality Alignment — 15%
+
+FR-NH-006  The scoring formula SHALL be deterministic and reproducible. Each
+           scoring execution SHALL produce a ScoringAudit record capturing
+           input values, individual dimension scores, and the composite score.
+
+FR-NH-007  The system SHALL perform deep risk analysis on the top three (3)
+           ranked candidates. Each deep analysis SHALL include:
+           a) Demand risk assessment.
+           b) Refund risk prediction.
+           c) Brand fit validation against Store DNA.
+           d) Operational complexity estimation.
+           e) Cannibalization risk analysis relative to existing catalog.
+           f) Revenue scenario modeling: conservative, expected, and
+              aggressive projections.
+           g) Recommended test path and success criteria definition.
+
+FR-NH-008  The system SHALL return a ranked list of a minimum of ten (10)
+           candidates ordered by descending composite score.
+
+FR-NH-009  The system SHALL persist each generated set of NextHit candidates,
+           retaining the scoring audit trail and deep analysis outputs for
+           future retrieval.
+
+FR-NH-010  The system SHALL provide an endpoint to retrieve the detailed
+           analysis of an individual NextHit candidate by its identifier.
+
+FR-NH-011  The system SHALL support outcome tracking for NextHit candidates
+           that have been launched. Tracked outcomes SHALL include: actual
+           revenue, actual units sold, observed refund rate, and deviation
+           from projected values.
+
+================================================================================
+10. LAUNCH KIT AGENT
+================================================================================
+
+FR-LK-001  The system SHALL provide a Launch Kit generation capability that
+           accepts either a NextHit candidate identifier or a manually
+           specified product description as input.
+
+FR-LK-002  The system SHALL retrieve the active Store DNA for the merchant's
+           shop and include it as context in the launch kit generation
+           request to the LLM.
+
+FR-LK-003  The generated Launch Kit SHALL contain the following deliverables:
+           a) Launch Strategy — recommended timing, channel prioritization,
+              and budget allocation.
+           b) Copy Assets — product headlines, product descriptions, email
+              subject lines, and social media post copy.
+           c) Pricing Strategy — recommended MSRP, introductory discount
+              options, and bundle configurations.
+           d) Target Audience — persona mappings with messaging guidance
+              per persona.
+           e) Success Metrics — 7-day and 30-day sales targets and
+              break-even analysis.
+           f) Risk Mitigation — identification of top launch risks with
+              corresponding mitigation actions.
+           g) Pre-Launch Checklist — sequenced actionable tasks with
+              ownership designations.
+
+FR-LK-004  Launch timing recommendations SHALL be informed by the store's
+           seasonality analysis from the Store DNA module.
+
+FR-LK-005  Channel prioritization SHALL factor in estimated product price
+           point and the store's historical channel performance data where
+           available.
+
+FR-LK-006  Each generated Launch Kit SHALL be persisted and retrievable by
+           the user for subsequent review.
+
+FR-LK-007  The system SHALL expose an endpoint to list all previously
+           generated Launch Kits for the authenticated user.
+
+================================================================================
+11. RETENTION INTELLIGENCE AGENT
+================================================================================
+
+FR-RI-001  The system SHALL provide a Retention Intelligence analysis that
+           operates on the merchant's synchronized customer dataset.
+
+FR-RI-002  The system SHALL segment customers into the following ten (10)
+           standard RFM segments:
+           Champions, Loyal Customers, Potential Loyalists, New Customers,
+           Promising, Need Attention, About to Sleep, At Risk,
+           Hibernating, Lost.
+
+FR-RI-003  For each RFM segment, the system SHALL compute and output:
+           a) Segment size (customer count and percentage of total base).
+           b) Revenue at risk for the segment.
+           c) Predicted churn probability.
+           d) Predicted reactivation probability.
+           e) Recommended primary action (e.g., win-back, loyalty reward,
+              upsell, cross-sell).
+
+FR-RI-004  The system SHALL generate at least one campaign recommendation per
+           active RFM segment, including: campaign type, recommended channel,
+           offer suggestion, and expected revenue lift.
+
+FR-RI-005  The system SHALL persist generated retention insight records and
+           associate them with the originating shop.
+
+================================================================================
+12. CATALOG GAP DETECTION MODULE
+================================================================================
+
+FR-CG-001  The system SHALL analyze the merchant's product catalog and
+           customer order history to detect unfilled product opportunity gaps.
+
+FR-CG-002  The system SHALL detect gaps across the following four (4) gap
+           categories:
+           a) Price Gaps — price bands with adjacent demand signals and low
+              or absent catalog representation.
+           b) Category Adjacency Gaps — product categories related to
+              existing catalog offerings with low penetration.
+           c) Variant Gaps — missing attribute combinations (color, size,
+              style) for established product types.
+           d) Seasonal Gaps — seasonal demand windows not addressed by
+              current catalog.
+
+FR-CG-003  Each detected gap record SHALL include:
+           a) Gap category classification.
+           b) Gap opportunity score (normalized 0–1 scale).
+           c) Supporting evidence data.
+           d) Recommended action with rationale.
+           e) Estimated potential revenue if the gap is addressed.
+           f) Confidence level of the estimate.
+
+FR-CG-004  Detected gaps SHALL be persisted per shop and retrievable via
+           a dedicated API endpoint.
+
+FR-CG-005  The system SHALL expose endpoints to both trigger gap detection
+           and retrieve previously computed gap records for the authenticated
+           merchant.
+
+================================================================================
+13. EXECUTIVE DASHBOARD AND KPI ENGINE
+================================================================================
+
+FR-ED-001  The system SHALL present an executive dashboard as the primary
+           landing interface for authenticated merchant users.
+
+FR-ED-002  The dashboard SHALL compute and display the following KPIs derived
+           from synchronized store data:
+           a) Total Revenue (gross and net) for configurable time periods.
+           b) Order Count.
+           c) Average Order Value (AOV).
+           d) New Customer Acquisitions.
+           e) Returning Customer Count.
+           f) Refund Rate.
+           g) Marketing Spend (where data is available).
+           h) Growth Momentum Indicators.
+
+FR-ED-003  The system SHALL generate an AI-authored executive brief for the
+           active merchant, summarizing store performance, key trends, and
+           recommended priorities in natural language.
+
+FR-ED-004  The executive brief SHALL be grounded in the merchant's actual
+           synchronized data and SHALL reference computed KPIs and Store DNA
+           outputs in its narrative.
+
+FR-ED-005  The dashboard SHALL surface recent sync events with status
+           indicators to communicate data recency and sync health to the user.
+
+FR-ED-006  The dashboard SHALL support goal-based decision display, surfacing
+           relevant recommendations or alerts when user-defined goals are set.
+
+FR-ED-007  The system SHALL compute fulfillment time trends from order data
+           and surface them as a dashboard metric.
+
+================================================================================
+14. PUBLIC DOMAIN ANALYSIS MODULE
+================================================================================
+
+FR-PD-001  The system SHALL accept a publicly accessible domain URL as input
+           and perform automated analysis of the referenced web content.
+
+FR-PD-002  The domain analysis SHALL extract and return intelligence on:
+           a) Brand positioning signals.
+           b) Product and category information.
+           c) Competitive context indicators.
+           d) Market trend signals.
+
+FR-PD-003  The analysis output SHALL be returned to the requesting authenticated
+           user as a structured intelligence report.
+
+FR-PD-004  Domain analysis SHALL only be performed on publicly accessible URLs.
+           The system SHALL not attempt to access authenticated or private
+           web resources.
+
+================================================================================
+15. ACCOUNT AND SETTINGS MANAGEMENT
+================================================================================
+
+FR-AS-001  The system SHALL allow authenticated users to update their profile
+           information, including full name and email address.
+
+FR-AS-002  The system SHALL allow authenticated users to change their account
+           password by submitting their current password and a new password.
+           The system SHALL validate the current password before accepting
+           the change.
+
+FR-AS-003  The system SHALL provide an interface for users to view the
+           currently connected Shopify store and initiate re-authorization.
+
+FR-AS-004  The system SHALL support merchant-defined brand configuration
+           including: brand mission, brand positioning statement, target
+           audience definition, brand voice guidelines, and decision
+           governance rules.
+
+FR-AS-005  The system SHALL support definition of user-specified KPI models
+           including designation of a North Star metric and supporting KPIs.
+
+FR-AS-006  The system SHALL support definition of customer personas, including
+           name, demographic profile, and behavioral descriptors.
+
+FR-AS-007  The system SHALL expose brand configuration data to the AI analysis
+           modules to ensure generated outputs are contextually aligned with
+           the merchant's stated brand identity.
+
+================================================================================
+16. ADMINISTRATION MODULE
+================================================================================
+
+FR-AD-001  The system SHALL provide an administration interface accessible
+           exclusively to principals with the "admin" role.
+
+FR-AD-002  The administration interface SHALL display aggregate system statistics
+           including: total registered users, total connected shops, and
+           system-level sync activity.
+
+FR-AD-003  Administrators SHALL be able to list all registered user accounts,
+           view account status, and modify user roles.
+
+FR-AD-004  Administrators SHALL be able to list all connected shops and view
+           their synchronization state and data health indicators.
+
+FR-AD-005  The system SHALL provide a system health check endpoint accessible
+           to administrators, returning the operational status of critical
+           system dependencies (database connectivity, external API
+           reachability).
+
+FR-AD-006  The system SHALL log all AI agent executions in an AgentExecution
+           audit table, capturing: agent type, initiating user, shop context,
+           execution timestamp, duration, and terminal status.
+
+FR-AD-007  The system SHALL log all API usage in a UsageLog table to support
+           cost attribution and operational analytics.
+
+================================================================================
+17. NOTIFICATION AND EMAIL SERVICES
+================================================================================
+
+FR-NE-001  The system SHALL transmit transactional emails via an external
+           email delivery service (Resend). All outbound emails SHALL
+           originate from a configured sender address.
+
+FR-NE-002  The system SHALL send an email verification message to users
+           upon registration containing a unique verification link.
+
+FR-NE-003  The system SHALL send a password reset email containing a
+           time-limited, single-use reset link upon submission of a valid
+           forgot-password request.
+
+FR-NE-004  The system SHALL include a fallback sender address configuration
+           to ensure email delivery continuity in the event the primary
+           configured sender is unavailable.
+
+================================================================================
+18. DATA INTEGRITY AND AUDIT LOGGING
+================================================================================
+
+FR-DI-001  All monetary values (prices, revenue, refunds) SHALL be stored
+           using a fixed-precision decimal type to ensure financial accuracy
+           and avoid floating-point rounding errors.
+
+FR-DI-002  Foreign key relationships SHALL be enforced with cascading delete
+           constraints to ensure referential integrity upon parent record
+           deletion.
+
+FR-DI-003  Deletion of a User record SHALL cascade to delete all associated
+           Shop, Order, Product, Customer, KPI, and Intelligence records
+           owned by that user.
+
+FR-DI-004  The system SHALL maintain a SyncEvent log capturing the full
+           lifecycle of each synchronization operation, retaining records
+           for post-incident analysis.
+
+FR-DI-005  The system SHALL maintain EvidenceChain records linking each AI-
+           generated recommendation or insight to the specific data points
+           that grounded the output.
+
+FR-DI-006  The system SHALL maintain BusinessMemorySnapshot records capturing
+           periodic snapshots of store state to support longitudinal trend
+           analysis.
+
+FR-DI-007  The system SHALL maintain a DataQualityLog tracking data freshness
+           and completeness indicators per shop over time.
+
+================================================================================
+19. NON-FUNCTIONAL CONSTRAINTS AFFECTING FUNCTIONAL BEHAVIOR
+================================================================================
+
+FR-NF-001  All API endpoints SHALL validate request payloads against defined
+           schemas using Zod schema validation. Requests failing validation
+           SHALL be rejected with an HTTP 400 response and a structured
+           error descriptor.
+
+FR-NF-002  The system SHALL enforce multi-tenancy isolation. All data access
+           operations SHALL be scoped to the authenticated user's associated
+           shop identifier. Cross-tenant data access SHALL be prohibited.
+
+FR-NF-003  The system SHALL use composite database indices on (shopId,
+           resource) and (shopId, date) keys to ensure query performance
+           within acceptable response time bounds at production data volumes.
+
+FR-NF-004  The system SHALL check data sufficiency before executing
+           computationally intensive intelligence operations (Store DNA,
+           NextHit generation) and return a structured error response if
+           thresholds are not met, rather than producing unreliable outputs.
+
+FR-NF-005  AI agent executions involving external LLM API calls SHALL be
+           bounded by configurable timeout thresholds to prevent indefinite
+           blocking of user-facing request handlers.
+
+================================================================================
+20. EXTERNAL INTERFACE REQUIREMENTS
+================================================================================
+
+FR-EI-001  Shopify API Interface:
+           The system SHALL communicate with the Shopify REST API (version
+           2024-10 or later) using authenticated requests bearing a valid
+           merchant access token. The system SHALL handle Shopify API rate
+           limits using back-off and retry logic.
+
+FR-EI-002  OpenAI API Interface:
+           The system SHALL interface with the OpenAI API using the following
+           models:
+           a) gpt-4o — for complex reasoning tasks (executive briefs,
+              launch kit generation, deep risk analysis).
+           b) text-embedding-3-small — for semantic embedding and
+              similarity-based retrieval operations.
+           API keys SHALL be sourced from environment configuration and SHALL
+           NOT be embedded in source code.
+
+FR-EI-003  Google Trends API Interface:
+           The system SHALL interface with the Google Trends data service
+           to retrieve keyword trend interest time-series data for use in
+           NextHit scoring and market analysis.
+
+FR-EI-004  Resend Email API Interface:
+           The system SHALL interface with the Resend transactional email
+           API to deliver verification, password reset, and notification
+           emails. The system SHALL surface delivery failure errors to the
+           originating request handler.
+
+FR-EI-005  Database Interface:
+           The system SHALL communicate with a PostgreSQL-compatible
+           relational database via the Prisma ORM. All schema migrations
+           SHALL be managed via Prisma migration files.
+
+================================================================================
+END OF FUNCTIONAL REQUIREMENTS SPECIFICATION
+Document: BrandMindAI FRS v1.0
+================================================================================

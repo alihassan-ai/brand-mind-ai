@@ -4,11 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+<<<<<<< HEAD
     "build": "next build",
+=======
+    "build": "npx prisma generate --schema=./prisma/schema.prisma && next build",
+>>>>>>> latest_branch
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@brandmind/shared": "workspace:*",
+    "@brandmind/backend": "workspace:*",
+    "@brandmind/brain": "workspace:*",
+>>>>>>> latest_branch
     "@prisma/client": "6.19.1",
     "@radix-ui/react-slot": "^1.2.4",
     "@shopify/shopify-api": "^12.2.0",
@@ -40,4 +50,8 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> latest_branch

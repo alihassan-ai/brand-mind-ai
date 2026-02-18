@@ -3,6 +3,9 @@ import { prisma } from '@brandmind/shared';
 import { getConnectedShop } from '@brandmind/backend/auth/session';
 import { triggerAutoSync } from '@brandmind/backend/sync/auto-sync';
 
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
     try {
         const shopDomain = await getConnectedShop();

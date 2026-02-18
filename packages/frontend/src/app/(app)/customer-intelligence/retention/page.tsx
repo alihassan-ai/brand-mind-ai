@@ -19,6 +19,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { formatCurrency } from "@/lib/formatter";
+import { RetentionRevenueCard } from "./RetentionRevenueCard";
 
 export default async function RetentionPage() {
   const shopDomain = await getConnectedShop();
@@ -127,31 +128,10 @@ export default async function RetentionPage() {
               </div>
             </ExecutiveCard>
 
-            <ExecutiveCard
-              title="Revenue Exposure"
-              subtitle="Value at risk from churn"
-              icon={<AlertCircle className="w-6 h-6 text-rose-400" />}
-              badge="High Risk"
-            >
-              <div className="space-y-8 py-4">
-                <div className="text-center">
-                  <span className="text-5xl font-clash font-bold text-[var(--foreground)] leading-none">
-                    {formatCurrency(
-                      rfmStats.filter(s => ['at_risk', 'hibernating', 'lost'].includes(s.rfmSegment)).reduce((sum, s) => sum + (Number(s._sum.totalSpent) || 0), 0),
-                      currencyCode,
-                      { maximumFractionDigits: 0 }
-                    )}
-                  </span>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-2">Aggregated Risk Value</p>
-                </div>
-                <div className="pt-6 border-t border-[var(--border)] space-y-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-[var(--muted-foreground)] font-medium italic">Detection Node</span>
-                    <ExecutiveBadge variant="rose">Active Phase</ExecutiveBadge>
-                  </div>
-                </div>
-              </div>
-            </ExecutiveCard>
+            <RetentionRevenueCard
+              revenue={rfmStats.filter(s => ['at_risk', 'hibernating', 'lost'].includes(s.rfmSegment)).reduce((sum, s) => sum + (Number(s._sum.totalSpent) || 0), 0)}
+              currencyCode={currencyCode}
+            />
           </div>
 
           <div className="space-y-8">
@@ -188,8 +168,8 @@ function InsightPlaybook({ insight }: { insight: any }) {
 
   return (
     <div className={`p-8 rounded-[2.5rem] border transition-all duration-500 group bg-[var(--background-card)] flex flex-col h-full ${isVIP ? 'border-amber-500/20 hover:border-amber-500/40' :
-        isLoss ? 'border-rose-500/20 hover:border-rose-500/40' :
-          'border-[var(--border)] hover:border-white/10'
+      isLoss ? 'border-rose-500/20 hover:border-rose-500/40' :
+        'border-[var(--border)] hover:border-white/10'
       }`}>
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">

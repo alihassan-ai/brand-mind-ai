@@ -40,7 +40,31 @@ export async function aggregateDailyMetrics(shopId: string, date: Date) {
     // v1.1 Executive Dashboard simulation engine
     // Values are simulated based on revenue volume to provide context until 3rd party APIs are connected
     const noise = () => (Math.random() * 0.4) + 0.8; // +/- 20% variance
+<<<<<<< HEAD
     const marketingSpend = netRevenue.mul(0.25 * noise()); // Dynamic spend simulation
+=======
+
+    // [REAL DATA] Try to fetch real marketing spend from Meta Ads
+    const realMarketingSpend = await prisma.metaInsight.aggregate({
+        where: {
+            ad: { campaign: { account: { shopId } } },
+            date: {
+                gte: startOfDay,
+                lte: endOfDay
+            }
+        },
+        _sum: { spend: true }
+    });
+
+    let marketingSpend: Decimal;
+
+    if (realMarketingSpend._sum.spend) {
+        marketingSpend = new Decimal(realMarketingSpend._sum.spend);
+    } else {
+        // Fallback: Dynamic spend simulation (25% of Revenue)
+        marketingSpend = netRevenue.mul(0.25 * noise());
+    }
+>>>>>>> latest_branch
     const sessions = Math.floor(netRevenue.toNumber() / (2.5 * noise())); // Simulation based on avg $2.50 RPC
     const fulfillmentTime = 1.2 + (Math.random() * 2.5); // Simulated cleanup
 
