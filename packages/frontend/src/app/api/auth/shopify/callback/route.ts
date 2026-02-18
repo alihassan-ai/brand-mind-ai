@@ -4,7 +4,6 @@ import { prisma } from '@brandmind/shared';
 import { getCurrentUser } from '@brandmind/backend/auth/session';
 import { encrypt } from '@brandmind/backend/auth/crypto';
 import { cookies } from 'next/headers';
-import { runFullSync } from '@brandmind/backend/sync/shopify-sync';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -48,7 +47,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Save or update shop in our DB
-        const shop = await prisma.shop.upsert({
+        await prisma.shop.upsert({
             where: { shopDomain },
             update: {
                 accessToken: encrypt(accessToken),
@@ -69,11 +68,6 @@ export async function GET(req: NextRequest) {
             sameSite: "lax",
             maxAge: 30 * 24 * 60 * 60, // 30 days
             path: "/",
-        });
-
-        // Trigger background sync (Phase 1: 6 months, Phase 2: everything else)
-        runFullSync(shop.id).catch(err => {
-            console.error('[Shopify OAuth Callback] Sync failed to start:', err);
         });
 
         // Redirect to a page that starts the sync and shows progress

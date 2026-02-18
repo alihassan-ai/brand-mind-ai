@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { getConnectedShop } from "@brandmind/backend/auth/session";
 import { runFullSync } from "@brandmind/backend/sync/shopify-sync";
+import { prisma } from "@brandmind/shared";
+
+export const maxDuration = 300;
+export const dynamic = "force-dynamic";
 
 export async function POST() {
   try {
@@ -10,7 +14,12 @@ export async function POST() {
       return NextResponse.json({ error: "No shop connected" }, { status: 401 });
     }
 
-    await runFullSync(shopDomain);
+    const shop = await prisma.shop.findUnique({ where: { shopDomain } });
+    if (!shop) {
+      return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    }
+
+    await runFullSync(shop.id);
 
     return NextResponse.json({ success: true, message: "Sync completed" });
   } catch (error: any) {

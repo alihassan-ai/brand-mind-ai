@@ -1,6 +1,7 @@
 import { prisma } from '@brandmind/shared';
 import { decrypt } from '../auth/crypto';
 import { syncProducts, syncOrders, syncCustomers } from './shopify-sync';
+import { syncMetaAds } from './meta-sync';
 import { backfillDailyMetrics } from '@brandmind/brain';
 import { createSyncLog, updateSyncLog } from './sync-audit';
 
@@ -100,11 +101,14 @@ export async function triggerAutoSync(shopId: string, force: boolean = false): P
                     const accessToken = decrypt(shop.accessToken);
                     const shopDomain = shop.shopDomain;
 
-                    const [products, orders, customers] = await Promise.all([
+                    const [products, orders, customers, metaResult] = await Promise.all([
                         syncProducts(shopId, shopDomain, accessToken),
                         syncOrders(shopId, shopDomain, accessToken),
-                        syncCustomers(shopId, shopDomain, accessToken)
+                        syncCustomers(shopId, shopDomain, accessToken),
+                        syncMetaAds(shopId)
                     ]);
+
+                    console.log(`[Auto-Sync] Meta Sync Result:`, metaResult);
 
                     console.log(`[Auto-Sync] Completed background update for ${shopDomain}. Running metrics backfill...`);
 

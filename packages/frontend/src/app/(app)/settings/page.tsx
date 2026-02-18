@@ -2,10 +2,16 @@ import { getCurrentUser, getCurrentShop } from "@brandmind/backend/auth/session"
 import { redirect } from "next/navigation";
 import { Settings } from "lucide-react";
 import { SettingsForms } from "@/components/settings/SettingsForms";
+import { prisma } from "@brandmind/shared";
 
 export default async function SettingsPage() {
     const user = await getCurrentUser();
     const shop = await getCurrentShop();
+
+    const metaAccount = shop ? await prisma.metaAccount.findUnique({
+        where: { shopId: shop.id },
+        select: { status: true, name: true }
+    }) : null;
 
     if (!user) {
         redirect("/auth/login");
@@ -27,7 +33,12 @@ export default async function SettingsPage() {
                 </p>
             </div>
 
-            <SettingsForms user={user} shop={shop} />
+            <SettingsForms
+                user={user}
+                shop={shop}
+                metaConnected={metaAccount?.status === 'active'}
+                metaAdAccountName={metaAccount?.name}
+            />
         </div>
     );
 }

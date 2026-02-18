@@ -24,7 +24,6 @@ function OnboardingContent() {
   const [shopDomain, setShopDomain] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     async function checkRequirements() {
@@ -46,7 +45,7 @@ function OnboardingContent() {
           return;
         }
 
-        setUser(data.user);
+        // user authenticated
       } catch (err) {
         setError("Failed to verify account status.");
       } finally {
@@ -88,7 +87,7 @@ function OnboardingContent() {
           return;
         }
 
-        setUser(data.user);
+        // user authenticated
       } catch (err) {
         setError("Failed to verify account status.");
       } finally {
@@ -119,11 +118,31 @@ function OnboardingContent() {
     );
   }
 
-  if (mode === "oauth_complete" && urlShop) {
-    setTimeout(() => {
-      router.push("/command-center");
-    }, 12000);
+  const [syncDone, setSyncDone] = useState(false);
+  const [syncError, setSyncError] = useState("");
 
+  useEffect(() => {
+    if (mode !== "oauth_complete" || !urlShop) return;
+
+    async function kickoffSync() {
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          setSyncError(body.error || "Sync failed. Please try again from the dashboard.");
+        }
+      } catch {
+        setSyncError("Network error during sync. Please retry from the dashboard.");
+      } finally {
+        setSyncDone(true);
+        router.push("/command-center");
+      }
+    }
+
+    kickoffSync();
+  }, [mode, urlShop, router]);
+
+  if (mode === "oauth_complete" && urlShop) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--primary)]/5 rounded-full blur-[120px] pointer-events-none" />
@@ -136,7 +155,14 @@ function OnboardingContent() {
           <div className="bg-[var(--background-card)] border border-[var(--border)] rounded-2xl p-10">
             <h1 className="text-2xl font-bold text-[var(--foreground)] mb-2">Initializing Intelligence</h1>
             <p className="text-[var(--muted-foreground)] text-sm mb-10">We&apos;re syncing your recent data and building your Brand DNA.</p>
-            <SyncProgress shopDomain={urlShop} />
+            {syncError ? (
+              <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-4 py-3 rounded-xl text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{syncError}</span>
+              </div>
+            ) : (
+              <SyncProgress shopDomain={urlShop} syncDone={syncDone} />
+            )}
           </div>
         </div>
       </div>

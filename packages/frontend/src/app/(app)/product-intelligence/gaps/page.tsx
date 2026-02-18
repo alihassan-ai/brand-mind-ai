@@ -1,20 +1,12 @@
 import { getConnectedShop } from "@brandmind/backend/auth/session";
 import { prisma } from "@brandmind/shared";
 import { redirect } from "next/navigation";
+
 import {
-  ExecutiveCard,
-  ExecutiveBadge
-} from "@/components/ExecutiveUI";
-import {
-  Target,
-  Zap,
-  ShieldAlert,
-  TrendingUp,
   ScanSearch,
-  ChevronRight,
-  ArrowUpRight
 } from "lucide-react";
 import { formatCurrency } from "@/lib/formatter";
+import { GapDossier } from "./GapDossier";
 
 export default async function GapsPage() {
   const shopDomain = await getConnectedShop();
@@ -82,68 +74,4 @@ export default async function GapsPage() {
   );
 }
 
-function GapDossier({ gap, currencyCode }: { gap: any, currencyCode: string }) {
-  const typeConfigs: Record<string, { icon: React.ReactNode, variant: any }> = {
-    price_gap: {
-      icon: <TrendingUp className="w-6 h-6 text-blue-400" />,
-      variant: "blue"
-    },
-    category_gap: {
-      icon: <Target className="w-6 h-6 text-purple-400" />,
-      variant: "purple"
-    },
-    variant_gap: {
-      icon: <Zap className="w-6 h-6 text-emerald-400" />,
-      variant: "emerald"
-    },
-    seasonal_gap: {
-      icon: <ShieldAlert className="w-6 h-6 text-rose-400" />,
-      variant: "rose"
-    },
-  };
 
-  const config = typeConfigs[gap.gapType] || typeConfigs.category_gap;
-
-  return (
-    <ExecutiveCard
-      title={gap.gapType === "price_gap" ? "Pricing Exposure" : "Strategic Gap"}
-      subtitle={`Dossier Node: ${gap.id.substring(0, 8)}`}
-      icon={config.icon}
-      badge={`${Math.round(gap.confidence * 100)}% Confidence`}
-    >
-      <div className="space-y-6 flex flex-col h-full">
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <ExecutiveBadge variant={config.variant === 'gold' ? 'gold' : config.variant}>
-              {gap.gapType.split('_')[0].toUpperCase()}
-            </ExecutiveBadge>
-            {gap.potentialRevenue > 10000 && <ExecutiveBadge variant="gold">High Impact</ExecutiveBadge>}
-          </div>
-          <h3 className="text-[var(--foreground)] font-clash font-bold text-lg leading-snug">
-            {gap.description || "Unidentified Opportunity"}
-          </h3>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[var(--foreground)]/5 border border-[var(--border-hover)] space-y-1">
-          <span className="text-[10px] uppercase font-bold text-[var(--muted-foreground)] tracking-widest">Suggested Action</span>
-          <p className="text-sm text-slate-300 italic leading-relaxed">
-            {gap.suggestedAction}
-          </p>
-        </div>
-
-        <div className="mt-auto pt-6 flex items-center justify-between border-t border-[var(--border)]">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-[var(--muted-foreground)] tracking-widest block mb-1">Impact Potential</span>
-            <span className="text-xl font-clash font-bold text-emerald-400">
-              {gap.potentialRevenue ? formatCurrency(gap.potentialRevenue, currencyCode) : "Market Fit"}
-            </span>
-          </div>
-
-          <button className="p-3 rounded-xl bg-[var(--foreground)]/5 border border-[var(--border-hover)] hover:bg-white/10 transition-all text-[var(--muted-foreground)] hover:text-[var(--foreground)] group/btn">
-            <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-          </button>
-        </div>
-      </div>
-    </ExecutiveCard>
-  );
-}

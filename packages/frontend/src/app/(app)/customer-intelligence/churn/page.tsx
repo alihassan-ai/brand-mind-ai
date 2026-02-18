@@ -14,6 +14,7 @@ import {
     ExecutiveCard,
     ExecutiveBadge,
 } from "@/components/ExecutiveUI";
+import { ChurnRiskBanner } from "./ChurnRiskBanner";
 
 export default async function ChurnPage() {
     const user = await getCurrentUser();
@@ -66,19 +67,11 @@ export default async function ChurnPage() {
             </div>
 
             {/* Alert Banner */}
-            {totalAtRisk > 0 && (
-                <div className="flex items-center gap-4 p-6 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-                    <AlertCircle className="w-8 h-8 text-rose-400 flex-shrink-0" />
-                    <div>
-                        <p className="font-clash font-bold text-lg">
-                            {totalAtRisk} customers at risk of churning
-                        </p>
-                        <p className="text-[var(--muted-foreground)] text-sm">
-                            Representing {new Intl.NumberFormat('en', { style: 'currency', currency: currencyCode }).format(totalRevAtRisk)} in historical revenue
-                        </p>
-                    </div>
-                </div>
-            )}
+            <ChurnRiskBanner
+                count={totalAtRisk}
+                revenue={totalRevAtRisk}
+                currencyCode={currencyCode}
+            />
 
             {/* At Risk Segments */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
