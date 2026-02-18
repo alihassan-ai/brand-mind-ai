@@ -1013,6 +1013,7 @@ model MetaAccount {
   shopId        String    @unique
   shop          Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   adAccountId   String    // The ID of the connected ad account (act_123456)
+  name          String?   // The descriptive name of the ad account
   accessToken   String    // Encrypted long-lived access token
   status        String    @default("active") // active, revoked, error
   lastSyncedAt  DateTime?

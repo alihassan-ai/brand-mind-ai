@@ -7,12 +7,8 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@brandmind/frontend",
-<<<<<<< HEAD
-    "build": "npm run build --workspace=@brandmind/frontend",
-=======
     "build": "npx prisma generate --schema=./packages/frontend/prisma/schema.prisma && npm run build --workspace=@brandmind/frontend",
     "postinstall": "npx prisma generate --schema=./packages/frontend/prisma/schema.prisma",
->>>>>>> latest_branch
     "start": "npm run start --workspace=@brandmind/frontend",
     "lint": "npm run lint --workspace=@brandmind/frontend",
     "test": "jest",
@@ -32,8 +28,4 @@
   "dependencies": {
     "@prisma/client": "^6.19.1"
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> latest_branch

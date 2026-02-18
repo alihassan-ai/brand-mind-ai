@@ -1,9 +1,4 @@
 export * from './store-dna';
-<<<<<<< HEAD
-export * from './gap-detector';
-export * from './trends';
-export * from './evidence';
-=======
 export * from './product-research';
 export * from './gap-detector';
 export * from './insights-engine';
@@ -17,4 +12,3 @@ export * from './public-analyzer';
 export * from './creative-fatigue';
 export * from './stock-ad-sync';
 export * from '../engine/forecasting';
->>>>>>> latest_branch

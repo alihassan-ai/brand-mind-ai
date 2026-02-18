@@ -33,12 +33,17 @@ export async function checkStockAdConflicts(shopId: string): Promise<StockConfli
             campaigns: {
                 where: { status: 'ACTIVE' },
                 include: {
-                    ads: {
+                    adSets: {
                         where: { status: 'ACTIVE' },
                         include: {
-                            insights: {
-                                take: 1,
-                                orderBy: { date: 'desc' }
+                            ads: {
+                                where: { status: 'ACTIVE' },
+                                include: {
+                                    insights: {
+                                        take: 1,
+                                        orderBy: { date: 'desc' }
+                                    }
+                                }
                             }
                         }
                     }
@@ -61,39 +66,41 @@ export async function checkStockAdConflicts(shopId: string): Promise<StockConfli
 
     // 3. Match Ads to Products
     for (const campaign of metaAccount.campaigns) {
-        for (const ad of campaign.ads) {
-            // Heuristic: Does Ad Name or Creative Name contain Product Title?
-            // " Bamboo Yoga Pants - retargeting " -> Matches "Bamboo Yoga Pants"
+        for (const adSet of campaign.adSets) {
+            for (const ad of adSet.ads) {
+                // Heuristic: Does Ad Name or Creative Name contain Product Title?
+                // " Bamboo Yoga Pants - retargeting " -> Matches "Bamboo Yoga Pants"
 
-            let matchedProduct: any = null;
-            let bestMatchScore = 0;
+                let matchedProduct: any = null;
+                let bestMatchScore = 0;
 
-            for (const product of products) {
-                const score = calculateSimilarity(ad.name, product.title);
-                if (score > 0.6 && score > bestMatchScore) { // Threshold 0.6
-                    bestMatchScore = score;
-                    matchedProduct = product;
+                for (const product of products) {
+                    const score = calculateSimilarity(ad.name, product.title);
+                    if (score > 0.6 && score > bestMatchScore) { // Threshold 0.6
+                        bestMatchScore = score;
+                        matchedProduct = product;
+                    }
                 }
-            }
 
-            if (matchedProduct) {
-                // Check Inventory
-                const totalStock = matchedProduct.variants.reduce((acc: number, v: any) => acc + (v.inventoryQuantity || 0), 0);
+                if (matchedProduct) {
+                    // Check Inventory
+                    const totalStock = matchedProduct.variants.reduce((acc: number, v: any) => acc + (v.inventoryQuantity || 0), 0);
 
-                if (totalStock === 0) {
-                    const spend = ad.insights[0]?.spend || 0;
+                    if (totalStock === 0) {
+                        const spend = ad.insights[0]?.spend || 0;
 
-                    conflicts.push({
-                        adId: ad.adId,
-                        adName: ad.name,
-                        campaignName: campaign.name,
-                        productTitle: matchedProduct.title,
-                        productId: matchedProduct.id,
-                        currentStock: 0,
-                        spendYesterday: spend,
-                        status: 'CRITICAL_WASTE',
-                        action: 'Turn off Ad immediately'
-                    });
+                        conflicts.push({
+                            adId: ad.adId,
+                            adName: ad.name,
+                            campaignName: campaign.name,
+                            productTitle: matchedProduct.title,
+                            productId: matchedProduct.id,
+                            currentStock: 0,
+                            spendYesterday: spend,
+                            status: 'CRITICAL_WASTE',
+                            action: 'Turn off Ad immediately'
+                        });
+                    }
                 }
             }
         }

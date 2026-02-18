@@ -273,7 +273,7 @@ export default async function GrowthEnginePage() {
                                                     {camp.name}
                                                 </td>
                                                 <td className="py-4">
-                                                    <Badge variant={camp.status === 'ACTIVE' ? 'success' : 'secondary'}>{camp.status}</Badge>
+                                                    <Badge variant={camp.status === 'ACTIVE' ? 'emerald' : 'secondary'}>{camp.status}</Badge>
                                                 </td>
                                                 <td className="py-4 text-[var(--muted-foreground)]">{camp.objective?.replace('OUTCOME_', '')}</td>
                                                 <td className="py-4 text-[var(--muted-foreground)]">{camp.buyingType}</td>

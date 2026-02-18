@@ -7,7 +7,7 @@ interface SyncStep {
     status: "pending" | "loading" | "complete";
 }
 
-export function SyncProgress({ syncDone = false }: { shopDomain: string; syncDone?: boolean }) {
+export function SyncProgress({ shopDomain, syncDone = false }: { shopDomain: string; syncDone?: boolean }) {
     const [steps, setSteps] = useState<SyncStep[]>([
         { id: "sync", label: "Syncing Products & Orders", status: "loading" },
         { id: "dna", label: "Generating Brand DNA", status: "pending" },

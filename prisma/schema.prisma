@@ -120,6 +120,7 @@ model Shop {
   customerRFM       CustomerRFM[]
   dataImports       DataImport[]
   syncEvents        SyncEvent[]
+  metaAccount       MetaAccount?
 }
 
 model SyncEvent {
@@ -1001,4 +1002,111 @@ model ScheduledJob {
 
   @@index([jobType])
   @@index([nextRunAt])
+}
+
+// ============================================
+// GROWTH ENGINE (META ADS)
+// ============================================
+
+model MetaAccount {
+  id            String    @id @default(cuid())
+  shopId        String    @unique
+  shop          Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  adAccountId   String    // The ID of the connected ad account (act_123456)
+  name          String?   // The descriptive name of the ad account
+  accessToken   String    // Encrypted long-lived access token
+  status        String    @default("active") // active, revoked, error
+  lastSyncedAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campaigns     MetaCampaign[]
+  insights      MetaInsight[]
+}
+
+model MetaCampaign {
+  id            String    @id @default(cuid())
+  metaAccountId String
+  metaAccount   MetaAccount @relation(fields: [metaAccountId], references: [id], onDelete: Cascade)
+  campaignId    String    @unique // The Meta ID (e.g. 238...)
+  name          String
+  status        String    // ACTIVE, PAUSED, ARCHIVED
+  objective     String?   // OUTCOME_SALES, OUTCOME_TRAFFIC etc
+  buyingType    String?   // AUCTION
+  spendCap      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  adSets        MetaAdSet[]
+  insights      MetaInsight[]
+}
+
+model MetaAdSet {
+  id            String    @id @default(cuid())
+  campaignId    String
+  campaign      MetaCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  adSetId       String    @unique
+  name          String
+  status        String
+  dailyBudget   String?
+  lifetimeBudget String?
+  startTime     DateTime?
+  endTime       DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  ads           MetaAd[]
+  insights      MetaInsight[]
+}
+
+model MetaAd {
+  id            String    @id @default(cuid())
+  adSetId       String
+  adSet         MetaAdSet @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+  adId          String    @unique
+  name          String
+  status        String
+  creativeId    String?   // Link to creative library later
+  previewUrl    String?   // Add preview URL for visual debugging
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  insights      MetaInsight[]
+}
+
+model MetaInsight {
+  id            String    @id @default(cuid())
+  // Polymorphic-ish relations (can belong to Account, Campaign, AdSet, or Ad)
+  metaAccountId String?
+  metaAccount   MetaAccount? @relation(fields: [metaAccountId], references: [id], onDelete: Cascade)
+  
+  campaignId    String?
+  campaign      MetaCampaign? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  adSetId       String?
+  adSet         MetaAdSet?    @relation(fields: [adSetId], references: [id], onDelete: Cascade)
+
+  adId          String?
+  ad            MetaAd?       @relation(fields: [adId], references: [id], onDelete: Cascade)
+
+  date          DateTime  @db.Date // Reporting date
+  spend         Float     @default(0)
+  impressions   Int       @default(0)
+  clicks        Int       @default(0)
+  cpc           Float     @default(0)
+  cpm           Float     @default(0)
+  ctr           Float     @default(0)
+  reach         Int       @default(0)
+  frequency     Float     @default(0)
+  
+  purchases     Int       @default(0) // action_values -> purchase
+  purchaseValue Float     @default(0)
+  roas          Float     @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([date])
+  @@index([metaAccountId])
+  @@index([campaignId])
 }
