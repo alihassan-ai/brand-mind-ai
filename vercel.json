@@ -1,5 +1,11 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
+    "crons": [
+        {
+            "path": "/api/cron/sync-pending",
+            "schedule": "*/5 * * * *"
+        }
+    ],
     "functions": {
         "packages/frontend/src/app/api/auth/shopify/callback/route.ts": {
             "maxDuration": 60
@@ -11,7 +17,7 @@
             "maxDuration": 60
         },
         "packages/frontend/src/app/api/sync/route.ts": {
-            "maxDuration": 60
+            "maxDuration": 300
         }
     }
 }

@@ -4,7 +4,7 @@ import { prisma } from '@brandmind/shared';
 import { getCurrentUser } from '@brandmind/backend/auth/session';
 import { encrypt } from '@brandmind/backend/auth/crypto';
 import { cookies } from 'next/headers';
-import { runFullSync } from '@brandmind/backend/sync/shopify-sync';
+// NOTE: DO NOT import runFullSync here - sync is triggered client-side from /onboarding
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
         }
 
         // Save or update shop in our DB
-        const shop = await prisma.shop.upsert({
+        await prisma.shop.upsert({
             where: { shopDomain },
             update: {
                 accessToken: encrypt(accessToken),
@@ -71,12 +71,9 @@ export async function GET(req: NextRequest) {
             path: "/",
         });
 
-        // Trigger background sync (Phase 1: 6 months, Phase 2: everything else)
-        runFullSync(shop.id).catch(err => {
-            console.error('[Shopify OAuth Callback] Sync failed to start:', err);
-        });
-
-        // Redirect to a page that starts the sync and shows progress
+        // NOTE: Sync is NOT triggered here (fire-and-forget gets killed on Vercel serverless).
+        // Instead, the onboarding page will call POST /api/sync client-side (new Lambda = fresh lifecycle).
+        // See onboarding/page.tsx oauth_complete branch for the sync trigger.
         // Use SHOPIFY_APP_URL if available to ensure we stay on the correct domain (ngrok)
         const baseUrl = process.env.SHOPIFY_APP_URL || '';
         const redirectUrl = new URL(`${baseUrl}/onboarding`);

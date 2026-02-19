@@ -19,9 +19,33 @@ export async function POST() {
       return NextResponse.json({ error: "Shop not found" }, { status: 404 });
     }
 
-    await runFullSync(shop.id);
+    // Mark sync as in progress
+    await prisma.shop.update({
+      where: { id: shop.id },
+      data: { syncStatus: "IN_PROGRESS" }
+    });
 
-    return NextResponse.json({ success: true, message: "Sync completed" });
+    try {
+      await runFullSync(shop.id);
+
+      // Mark sync as completed
+      await prisma.shop.update({
+        where: { id: shop.id },
+        data: {
+          syncStatus: "COMPLETED",
+          lastSyncAt: new Date()
+        }
+      });
+
+      return NextResponse.json({ success: true, message: "Sync completed" });
+    } catch (syncError: any) {
+      // Mark sync as failed
+      await prisma.shop.update({
+        where: { id: shop.id },
+        data: { syncStatus: "FAILED" }
+      });
+      throw syncError;
+    }
   } catch (error: any) {
     console.error("Sync error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

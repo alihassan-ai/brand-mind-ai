@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "SyncStatus" AS ENUM ('PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED');
+
+-- AlterTable
+ALTER TABLE "Shop" ADD COLUMN "syncStatus" "SyncStatus" NOT NULL DEFAULT 'PENDING',
+ADD COLUMN "lastSyncAt" TIMESTAMP(3);

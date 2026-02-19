@@ -89,6 +89,8 @@ model Shop {
   onboardingComplete Boolean @default(false)
   onboardingStep Int      @default(0)
   currencyCode   String   @default("USD")
+  syncStatus     SyncStatus @default(PENDING)
+  lastSyncAt     DateTime?
   
   user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders        Order[]
@@ -1109,4 +1111,11 @@ model MetaInsight {
   @@index([date])
   @@index([metaAccountId])
   @@index([campaignId])
+}
+
+enum SyncStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
 }
